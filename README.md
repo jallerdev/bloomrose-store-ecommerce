@@ -62,7 +62,7 @@ npx drizzle-kit push
 pnpm dev
 ```
 
-Launch the environment at `http://localhost:3000`.
+Launch the environment at your local development address (typically `http://localhost:3000`).
 
 ## 📂 Project Structure
 
