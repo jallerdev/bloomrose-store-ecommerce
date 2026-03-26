@@ -1,77 +1,77 @@
 # Bloom Rose E-commerce 🎀
 
-Una plataforma de comercio electrónico moderna, elegante y de alto rendimiento diseñada específicamente para la venta de accesorios femeninos (aretes, collares, pulseras). Construida con las últimas tecnologías del ecosistema moderno de React para ofrecer una experiencia interactiva veloz y escalable.
+A modern, elegant, and high-performance e-commerce platform designed specifically for selling women's accessories (earrings, necklaces, bracelets). Built with the latest technologies in the React ecosystem to deliver a fast and scalable interactive experience.
 
-## 🚀 Stack Tecnológico
+## 🚀 Tech Stack
 
 - **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
-- **Base de Datos & Backend:** [Supabase](https://supabase.com/) (PostgreSQL)
+- **Database & Backend:** [Supabase](https://supabase.com/) (PostgreSQL)
 - **ORM:** [Drizzle ORM](https://orm.drizzle.team/)
-- **Autenticación:** [Auth0 v4](https://auth0.com/) (Server-side Session Management)
-- **Estado Global (Carrito):** [Zustand](https://zustand-demo.pmnd.rs/) (con persistencia en LocalStorage)
-- **UI & Estilos:** [Tailwind CSS](https://tailwindcss.com/) + Componentes base de [shadcn/ui](https://ui.shadcn.com/)
-- **Iconografía:** [Lucide React](https://lucide.dev/)
+- **Authentication:** [Auth0 v4](https://auth0.com/) (Server-side Session Management)
+- **Global State (Cart):** [Zustand](https://zustand-demo.pmnd.rs/) (with LocalStorage persistence)
+- **UI & Styling:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) base components
+- **Iconography:** [Lucide React](https://lucide.dev/)
 
-## ✨ Características Principales
+## ✨ Key Features
 
-1. **Catálogo y Rutas Dinámicas (SSR):**
-   Las páginas detalladas de productos (`/productos/[slug]`) se renderizan directamente en el servidor (_Server-Side Rendering_) haciendo fetch de la DB, lo cual garantiza una carga inmediata y un SEO impecable.
-2. **Carrito de Compras Persistente & Interactivo:**
-   Estado global manejado con Zustand. Soporta validación de inventario en tiempo real, suma de sub-variantes individuales (ej. Color Dorado vs Plata) y guardado en `localStorage` impidiendo la pérdida del carrito al recargar. Almacenado estéticamente dentro de una barra lateral deslizable (_Sheet_).
+1. **Dynamic Catalog & Routing (SSR):**
+   Detailed product pages (`/productos/[slug]`) are rendered directly on the server (_Server-Side Rendering_) fetching from the DB, ensuring immediate load times and perfect SEO.
+2. **Persistent & Interactive Shopping Cart:**
+   Global state managed with Zustand. Supports real-time inventory validation, individual sub-variant addition (e.g., Gold vs. Silver), and `localStorage` saving to prevent cart loss on refresh. Housed in a sleek slide-out drawer (_Sheet_).
 
-3. **Panel Administrativo Protegido:**
-   Un dashboard interno bajo el path `/admin/*` para gestionar productos y categorías. Protegido rigurosamente con Auth0 middleware (`proxy.ts`), impidiendo el acceso a personal no autorizado.
+3. **Protected Admin Dashboard:**
+   An internal dashboard under the `/admin/*` path to manage products and categories. Strictly protected with Auth0 middleware (`proxy.ts`), preventing unauthorized access.
 
-4. **Autenticación Impecable Integrada:**
-   Flujo de Login y sincronización de perfiles gestionado mediante las API's seguras lado-servidor de `@auth0/nextjs-auth0`.
+4. **Seamless Authentication Integration:**
+   Secure login flow and profile synchronization managed via `@auth0/nextjs-auth0` server-side APIs.
 
-## ⚙️ Configuración y Desarrollo Local
+## ⚙️ Setup & Local Development
 
-### 1. Clonar e Instalar
+### 1. Clone & Install
 
-Clona el repositorio e instala las dependencias utilizando tu gestor de paquetes favorito:
+Clone the repository and install dependencies using your preferred package manager:
 
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd bloomrose-ecommerce
 pnpm install
-# o npm install / yarn install
+# or npm install / yarn install
 ```
 
-### 2. Variables de Entorno
+### 2. Environment Variables
 
-Copia el archivo de ejemplo y configura tus credenciales locales en `.env.local`:
+Copy the example file and configure your local credentials in `.env.local`:
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-> **Nota de Base de Datos:** Asegúrate de usar el puerto **5432 (Session Pooler)** de Supabase en el `DATABASE_URL` para que Drizzle pueda realizar introspección libremente sin bloqueos transaccionales de red.
+> **Database Note:** Ensure you use the **5432 (Session Pooler)** port from Supabase in your `DATABASE_URL` so Drizzle can perform introspection freely without network transaction locks.
 
-### 3. Migración de Esquemas (Drizzle)
+### 3. Schema Migration (Drizzle)
 
-Sincroniza la tabla de base de datos desde los modelos en `/lib/db/schema.ts` hacia tu base de datos configurada:
+Sync the database tables from the models in `/lib/db/schema.ts` to your configured database:
 
 ```bash
 npx drizzle-kit push
 ```
 
-### 4. Lanzar Servidor de Desarrollo
+### 4. Start Development Server
 
 ```bash
 pnpm dev
 ```
 
-Inicia el entorno en `http://localhost:3000`.
+Launch the environment at `http://localhost:3000`.
 
-## 📂 Estructura del Proyecto
+## 📂 Project Structure
 
-- `/app` — Enrutamiento del App Router, layouts, páginas y proxy de Next.js 16.
-- `/components` — Elementos atómicos y funcionales de UI construidos sobre Radix y Tailwind.
-- `/lib/db` — Esquemas de Drizzle ORM y singleton del conector PostgreSQL.
-- `/lib/store` — Centralización de Lógica de Negocio y Data-Stores (ej. Cart de Zustand).
-- `/public` — Recursos estáticos, imágenes default e íconos.
+- `/app` — App Router routes, layouts, pages, and Next.js 16 proxy.
+- `/components` — Atomic and functional UI elements built on Radix and Tailwind.
+- `/lib/db` — Drizzle ORM schemas and PostgreSQL connector singleton.
+- `/lib/store` — Centralized Business Logic and Data-Stores (e.g., Zustand Cart).
+- `/public` — Static assets, default images, and icons.
 
-## 🤝 Soporte y Contribución
+## 🤝 Support & Contribution
 
-Para nuevas implementaciones, por favor consulta la arquitectura base descrita dentro de `agents.md` la cual dicta todas las reglas de patrones de diseño de interacción de UI, SSR y persistencia vigentes en la plataforma.
+For new implementations, please refer to the base architecture described in `agents.md`, which dictates all UI interaction design patterns, SSR, and persistence rules for the platform.
