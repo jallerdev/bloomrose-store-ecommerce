@@ -110,10 +110,10 @@ export default async function AdminLayout({
           </div>
           <div className="ml-auto">
             <Link
-              href="/"
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              href="/productos"
+              className="text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
             >
-              ← Ver tienda
+              ← Volver a la tienda
             </Link>
           </div>
         </header>
