@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
-import { Users } from "lucide-react";
+import { CustomerTableActions } from "./CustomerTableActions";
 
 export const metadata = { title: "Clientes — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
@@ -41,13 +41,14 @@ export default async function AdminClientesPage() {
               <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
                 Registrado
               </th>
+              <th className="w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {clientes.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="py-16 text-center text-sm text-muted-foreground"
                 >
                   No hay clientes aún.
@@ -99,6 +100,13 @@ export default async function AdminClientesPage() {
                       month: "short",
                       day: "numeric",
                     })}
+                  </td>
+                  <td className="px-4 py-3.5 text-right">
+                    <CustomerTableActions
+                      userId={c.id}
+                      userRole={c.role}
+                      userEmail={c.email}
+                    />
                   </td>
                 </tr>
               ))

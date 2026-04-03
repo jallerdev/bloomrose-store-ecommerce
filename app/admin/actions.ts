@@ -1,7 +1,12 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { products, productVariants, productImages } from "@/lib/db/schema";
+import {
+  products,
+  productVariants,
+  productImages,
+  profiles,
+} from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -166,4 +171,58 @@ export async function uploadProductImageAction(formData: FormData) {
     .getPublicUrl(filename);
 
   return { url: urlData.publicUrl };
+}
+
+// ─── UPDATE USER ROLE ───────────────────────────────────────────────────────
+
+export async function updateUserRoleAction(
+  userId: string,
+  newRole: "ADMIN" | "CUSTOMER",
+) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user: adminUser },
+    } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "No autorizado." };
+    if (adminUser.id === userId && newRole === "CUSTOMER") {
+      return { error: "No puedes quitarte los permisos de admin a ti mismo." };
+    }
+
+    await db
+      .update(profiles)
+      .set({ role: newRole, updatedAt: new Date() })
+      .where(eq(profiles.id, userId));
+
+    revalidatePath("/admin/clientes");
+    return { success: true };
+  } catch (err: any) {
+    console.error("updateUserRoleAction error:", err);
+    return { error: "Error al actualizar el rol del usuario." };
+  }
+}
+
+export async function deleteUserAction(userId: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user: adminUser },
+    } = await supabase.auth.getUser();
+
+    if (!adminUser) return { error: "No autorizado." };
+    if (adminUser.id === userId) {
+      return { error: "No puedes eliminar tu propia cuenta desde aquí." };
+    }
+
+    // Nota: Esto solo elimina el perfil en la base de datos pública.
+    // Para eliminar de auth.users se requiere la service_role key.
+    await db.delete(profiles).where(eq(profiles.id, userId));
+
+    revalidatePath("/admin/clientes");
+    return { success: true };
+  } catch (err: any) {
+    console.error("deleteUserAction error:", err);
+    return { error: "Error al eliminar el usuario." };
+  }
 }
