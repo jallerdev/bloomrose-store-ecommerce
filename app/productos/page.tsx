@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { products as productsSchema, productVariants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { Suspense } from "react";
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters } from "@/components/ProductFilters";
@@ -92,7 +93,13 @@ export default async function ProductosPage(props: {
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Sidebar */}
           <aside className="w-full flex-shrink-0 lg:w-64">
-            <ProductFilters />
+            <Suspense
+              fallback={
+                <div className="h-64 w-full animate-pulse rounded-xl bg-card" />
+              }
+            >
+              <ProductFilters />
+            </Suspense>
           </aside>
 
           {/* Products Grid */}
