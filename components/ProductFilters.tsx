@@ -39,18 +39,18 @@ export function ProductFilters() {
 
   const handleMaterialChange = (value: string) => {
     const qs = createQueryString("material", value === "all" ? "" : value);
-    router.push("/products" + (qs ? `?${qs}` : ""), { scroll: false });
+    router.push("/productos" + (qs ? `?${qs}` : ""), { scroll: false });
   };
 
   const handlePriceCommit = (value: number[]) => {
     setPrice(value);
     const qs = createQueryString("maxPrice", String(value[0]));
-    router.push("/products" + (qs ? `?${qs}` : ""), { scroll: false });
+    router.push("/productos" + (qs ? `?${qs}` : ""), { scroll: false });
   };
 
   const clearFilters = () => {
     setPrice([1000]);
-    router.push("/products", { scroll: false });
+    router.push("/productos", { scroll: false });
   };
 
   const hasFilters =

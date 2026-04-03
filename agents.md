@@ -3,7 +3,7 @@
 ## Descripción
 
 Tienda online de accesorios femeninos artesanales (aretes, collares, pulseras, bolsos, lentes, bufandas).
-Construida con **Next.js 16 (App Router)** y conectada a **Supabase** como backend.
+Construida con **Next.js 16 (App Router)**, **Supabase Auth (SSR)** y **Drizzle ORM** sobre PostgreSQL.
 
 ## Stack Tecnológico
 
@@ -14,7 +14,9 @@ Construida con **Next.js 16 (App Router)** y conectada a **Supabase** como backe
 | Estilos     | Tailwind CSS 3 con CSS variables HSL                    |
 | Componentes | shadcn/ui (Radix primitives + `cn()` utility)           |
 | Iconos      | lucide-react                                            |
-| Backend     | Supabase (Postgres, Auth, Storage)                      |
+| Backend     | Supabase (Postgres, SSR Auth, Storage)                  |
+| ORM         | Drizzle ORM (queries relacionales anidadas)             |
+| Estado      | Zustand (carrito persistente en `localStorage`)         |
 | Fuentes     | DM Sans (`font-sans`) + Playfair Display (`font-serif`) |
 | Package Mgr | pnpm                                                    |
 
@@ -23,32 +25,43 @@ Construida con **Next.js 16 (App Router)** y conectada a **Supabase** como backe
 ```
 bloomrose-ecommerce/
 ├── app/
-│   ├── globals.css          # Tokens CSS (HSL variables)
-│   ├── layout.tsx           # Root layout (fuentes, metadata)
-│   ├── page.tsx             # Home
-│   ├── products/page.tsx    # Catálogo con filtros (Server Component + Supabase)
-│   ├── nuevos/page.tsx      # Nuevos lanzamientos
-│   ├── colecciones/page.tsx # Colecciones temáticas
-│   └── nosotros/page.tsx    # Sobre nosotros
+│   ├── globals.css               # Tokens CSS (HSL variables)
+│   ├── layout.tsx                # Root layout (fuentes, metadata)
+│   ├── page.tsx                  # Home
+│   ├── products/page.tsx         # Catálogo Server Component (Drizzle con variantes e imágenes)
+│   ├── productos/[slug]/page.tsx # Detalle de producto con selector de variantes
+│   ├── auth/
+│   │   ├── login/page.tsx        # Página de login/registro (AuthForm)
+│   │   ├── actions.ts            # Server Actions: loginAction, signupAction, logoutAction
+│   │   └── callback/route.ts     # Callback OAuth (email confirm, etc.)
+│   ├── admin/
+│   │   ├── layout.tsx            # Guard de rol ADMIN via Supabase SSR
+│   │   └── page.tsx              # Dashboard principal
+│   ├── perfil/page.tsx           # Página de perfil protegida
+│   └── checkout/page.tsx         # Checkout protegido
 ├── components/
-│   ├── StoreHeader.tsx      # Header con navegación
-│   ├── ProductCard.tsx      # Card de producto reutilizable
-│   ├── ProductFilters.tsx   # Filtros por material/precio (Client Component)
-│   ├── ProductInfo.tsx      # Detalle de producto
-│   ├── ProductImageGallery.tsx
-│   ├── RelatedProducts.tsx
-│   └── ui/                  # shadcn/ui components (50+)
+│   ├── StoreHeader.tsx           # Server Component: lee sesión del server, pasa props
+│   ├── StoreHeaderClient.tsx     # Client Component: UI del header (dropdown, nav)
+│   ├── CartSheet.tsx             # Carrito como Drawer (Sheet de shadcn)
+│   ├── AddToCartButton.tsx       # Botón de agregar al carrito (Client)
+│   ├── ProductVariantSelector.tsx # Selector de variantes con RadioGroup (Client)
+│   ├── ProductCard.tsx           # Card de catálogo reutilizable
+│   ├── ProductFilters.tsx        # Filtros por material/precio (Client Component)
+│   └── auth/
+│       └── AuthForm.tsx          # Formulario Login/Registro con Tabs (Client)
 ├── lib/
-│   ├── utils.ts             # cn() helper (clsx + tailwind-merge)
-│   └── supabase/
-│       ├── client.ts        # Browser Singleton (createBrowserClient)
-│       └── server.ts        # Per-request Singleton (createServerClient + React cache)
-├── types/
-│   └── supabase.ts          # DB types (products, categories)
-├── public/
-│   ├── images/              # Imágenes de productos hero
-│   └── products/            # Imágenes de catálogo
-└── tailwind.config.ts       # Theme extendido con tokens
+│   ├── db/
+│   │   ├── schema.ts             # Drizzle schema (tables + relations)
+│   │   ├── setup.ts              # DDL script + Postgres trigger de auth
+│   │   └── seed.ts               # Datos de prueba
+│   ├── store/
+│   │   └── cart.ts               # Zustand store del carrito
+│   ├── supabase/
+│   │   ├── client.ts             # Browser Singleton (createBrowserClient)
+│   │   └── server.ts             # Per-request Singleton (createServerClient)
+│   └── utils.ts                  # cn() helper
+├── proxy.ts                      # Middleware Edge: protege /admin /perfil /checkout
+└── tailwind.config.ts            # Theme extendido con tokens
 ```
 
 ## Paleta de Colores (CSS Variables)
@@ -72,7 +85,7 @@ Los colores se definen en `globals.css` como HSL sin `hsl()` wrapper:
 ## Convenciones de Código
 
 1. **Componentes**: Exportación con nombre (`export function Component`), no default (excepto pages).
-2. **Estilos**: Solo tokens de Tailwind (`text-foreground`, `bg-card`). Nunca colores hardcodeados como `bg-blue-500`.
+2. **Estilos**: Solo tokens de Tailwind (`text-foreground`, `bg-card`). Nunca colores hardcodeados.
 3. **Tipografía**: `font-serif` para headings de display, `font-sans` para body.
 4. **Categorías/labels**: `text-[10px] font-medium uppercase tracking-wider text-muted-foreground`.
 5. **Imágenes**: Siempre `next/image` con `fill` + `sizes` + `object-cover`.
@@ -91,38 +104,47 @@ Los colores se definen en `globals.css` como HSL sin `hsl()` wrapper:
 | Colecciones | `/colecciones` |
 | Nosotros    | `/nosotros`    |
 
-## Supabase
+## Supabase & Drizzle ORM
 
-- **Env vars**: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local`.
-- **Server Components**: Usar `import { createClient } from '@/lib/supabase/server'` + `await createClient()`.
-- **Client Components**: Usar `import { createClient } from '@/lib/supabase/client'` + `createClient()`.
-- **Tablas**: `products` (id, title, slug, price, image_url, category_id, material, stock, is_active), `categories` (id, name, slug, description).
+- **Env vars**: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local`. `DATABASE_URL` para Drizzle (puerto `6543` pooler).
+- **Server Components / Actions**: `import { createClient } from '@/lib/supabase/server'` + `await createClient()`.
+- **Client Components**: **NO** llamar a Supabase directamente para obtener datos de auth. En cambio, recibir los datos ya procesados como `props` del Server Component padre.
+- **Tablas Principales**: `products` (raíz) → `product_variants` (precio, SKU, stock) + `product_images` (fotos). `profiles` (sincronizado por trigger o Server Action al registrarse). `categories`, `orders`, `order_items`, `reviews`.
+- **Drizzle Relacional**: Usar `db.query.<tabla>.findMany({ with: { variants: true, images: true } })` para queries anidadas.
 
-## Responsabilidades Técnicas
+## Arquitectura de Auth (Patrón Clave)
 
-### Módulo de Productos Dinámicos
+> **IMPORTANTE**: El `StoreHeader` es un **Server Component**. Lee la sesión del usuario en el servidor y le pasa los datos como `props` al `StoreHeaderClient` (Client Component) para renderizar el Dropdown y el avatar. **Nunca** llames a `supabase.auth.getUser()` o `getSession()` directamente dentro de un Client Component del Header, ya que causa "locks" de token y estados de carga infinitos.
 
-- Crear y gestionar la carpeta de enrutamiento dinámico en Next.js (App Router): `app/productos/[id]/page.tsx` (o su equivalente `products`).
-- Implementar **Server Components** en esta página para hacer _fetching_ de los datos del producto directamente desde Supabase utilizando el ID o SLUG proporcionado en la URL.
-- La UI de la página de detalles (`ProductClientComponent`) debe incluir obligatoriamente:
-  - Un carrusel de imágenes de alta calidad (específico para accesorios).
-  - Nombre del producto, descripción detallada y precio claramente visible.
-  - Selector de cantidad y variantes (si aplica, ej: talla de anillo).
-  - Botón interactivo de 'Agregar al Carrito'.
+```
+StoreHeader (Server) → lee sesión + perfil → StoreHeaderClient (Client) recibe {serverUser, serverRole}
+```
 
-### Módulo de Gestión de Carrito (Zustand)
+- **Sincronización de perfil al registro**: La `signupAction` en `app/auth/actions.ts` hace un `db.insert(profiles)` con `.onConflictDoNothing()` para garantizar que el perfil exista en la DB, sin depender únicamente del trigger de PostgreSQL.
+- **Roles**: La tabla `profiles` tiene un campo `role` (enum: `CUSTOMER` | `ADMIN`). El layout de `/admin` valida este rol. El header muestra el enlace "Panel Admin" solo si `serverRole === "ADMIN"`.
 
-- Configurar e implementar un store de estado global utilizando **Zustand**.
-- El store debe definir acciones claras: `addItem` (añadir ítem), `removeItem` (eliminar ítem), `updateQuantity` (actualizar cantidad) y `clearCart` (vaciar carrito).
-- Cada ítem en el carrito debe incluir al mínimo: `productId`, `name`, `price`, `quantity`, `imageUrl` y detalles de la variante seleccionada.
-- Asegurar la **persistencia** del carrito en `localStorage` utilizando el middleware `persist` de Zustand para que el estado no se pierda al recargar la página.
+## Módulo de Gestión de Carrito (Zustand)
 
-### Patrón de Programación - Interacción UI/Carrito (Hydration)
+- Store en `lib/store/cart.ts`. Persiste en `localStorage` via middleware `persist`.
+- `CartItem` usa `id` = `productVariantId` (UUID de la variante) como llave única. Incluye `productId`, `title`, `price`, `imageUrl`, `stock`, `quantity`, `variantName`.
+- El `userId` de Supabase se inyecta al store desde `StoreHeaderClient` via `setUserId()` en un `useEffect`.
+- **Anti-Hydration**: `CartSheet` retorna un `<button>` estático simple mientras `!mounted`, para evitar mismatches de Radix UI IDs entre SSR y cliente.
 
-- Implementar patrones rigurosos para evitar errores de _hydration mismatch_ al usar `localStorage` en el entorno SSR de Next.js.
-- Utilizar un componente envoltorio (_wrapper_) o un hook personalizado (ej. montando un estado con `useEffect`) que espere activamente a que el cliente se cargue por completo antes de renderizar los detalles UI del carrito o sus contadores.
+## Módulo de Productos Dinámicos
 
-### Patrón de Programación - Validación de Stock
+- Catálogo: `app/products/page.tsx` — Server Component, query Drizzle con `with: { variants, images, category }`.
+- Detalle: `app/productos/[slug]/page.tsx` — Server Component, carga el producto por slug con todas sus relaciones.
+- `ProductVariantSelector.tsx` — Client Component que recibe variantes como props y actualiza el precio/stock dinámicamente con `RadioGroup`. Al confirmar, llama a `AddToCartButton`.
+- `AddToCartButton.tsx` — Client Component; valida stock localmente contra el store de Zustand antes de añadir.
 
-- La acción 'Agregar al Carrito' debe cruzar datos y validar el stock disponible en la base de datos de Supabase _antes_ de sumarlo o incrementar la cantidad en el carrito local.
-- Proporcionar **retroalimentación visual** responsiva e inmediata al usuario (ej. toast/notificación de error) si no hay stock suficiente o el carrito ya alcanzó el tope de inventario de esa pieza.
+## Patrón Anti-Hydration (Radix UI + Zustand)
+
+Cuando un componente de Radix UI (Sheet, Dialog, DropdownMenu) se combina con estado de `localStorage` (Zustand persist), **siempre** usar el patrón:
+
+```tsx
+const [mounted, setMounted] = useState(false);
+useEffect(() => setMounted(true), []);
+
+if (!mounted) return <FallbackEstaticoSinRadix />;
+return <ComponenteConRadixUI />;
+```

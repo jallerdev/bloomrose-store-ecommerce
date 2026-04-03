@@ -7,12 +7,13 @@ import { cn } from "@/lib/utils";
 
 interface AddToCartButtonProps {
   product: {
-    productId: string;
+    id: string; // Maps to productVariantId
+    productId: string; // Maps to root productId
     title: string;
     price: number;
     imageUrl: string | null;
     stock: number;
-    variant?: string;
+    variantName?: string;
   };
   quantity?: number;
   className?: string;
@@ -26,30 +27,33 @@ export function AddToCartButton({
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
 
-  const totalQuantityOfProduct = items
-    .filter((i) => i.productId === product.productId)
+  // Consider stock boundaries local to this EXACT variant ID
+  const totalQuantityOfVariant = items
+    .filter((i) => i.id === product.id)
     .reduce((sum, i) => sum + i.quantity, 0);
 
   const isOutOfStock =
-    product.stock <= 0 || totalQuantityOfProduct + quantity > product.stock;
+    product.stock <= 0 || totalQuantityOfVariant + quantity > product.stock;
 
   const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevenir redirecciones si está dentro de un Link
+    e.preventDefault();
 
     if (isOutOfStock) {
-      if (totalQuantityOfProduct > 0) {
+      if (totalQuantityOfVariant > 0) {
         toast.error(
-          `Solo se permiten ${product.stock} máximo en total de la misma pieza. Ya tienes ${totalQuantityOfProduct} añadido(s).`,
+          `Solo se permiten ${product.stock} máximo de esta variante. Ya tienes ${totalQuantityOfVariant} añadido(s).`,
         );
       } else {
-        toast.error(`No hay más stock de ${product.title}`);
+        toast.error(
+          `Agotado: No hay stock de ${product.title} ${product.variantName ? `(${product.variantName})` : ""}`,
+        );
       }
       return;
     }
 
     addItem({ ...product, quantity });
     toast.success(
-      `${quantity}x ${product.title} ${product.variant ? `(${product.variant})` : ""} añadido al carrito.`,
+      `${quantity}x ${product.title} ${product.variantName ? `(${product.variantName})` : ""} añadido al carrito.`,
     );
   };
 

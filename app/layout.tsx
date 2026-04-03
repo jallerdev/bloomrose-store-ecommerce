@@ -1,7 +1,6 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
-import { Auth0Provider } from "@/components/Auth0Provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -32,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="font-sans antialiased">
-        <Auth0Provider>{children}</Auth0Provider>
+        {children}
         <Toaster />
       </body>
     </html>

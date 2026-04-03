@@ -79,7 +79,7 @@ export default function ColeccionesPage() {
             {collections.map((collection) => (
               <Link
                 key={collection.name}
-                href="/products"
+                href="/productos"
                 className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-md"
               >
                 {/* Image */}

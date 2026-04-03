@@ -44,7 +44,7 @@ export function ProductCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image Container */}
+      {/* Image Container — overlay buttons live INSIDE here so overflow-hidden clips them */}
       <Link
         href={href}
         className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-secondary block"
@@ -76,51 +76,45 @@ export function ProductCard({
             </Badge>
           </div>
         )}
-      </Link>
 
-      {/* Wishlist Button */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          setIsWishlisted(!isWishlisted);
-        }}
-        className={cn(
-          "absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 backdrop-blur-sm transition-all duration-200 hover:bg-card sm:right-3 sm:top-3 sm:h-9 sm:w-9 pointer-events-auto",
-          isWishlisted && "bg-secondary",
-        )}
-        aria-label={
-          isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"
-        }
-      >
-        <Heart
+        {/* Wishlist Button — inside image so it clips correctly */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsWishlisted(!isWishlisted);
+          }}
           className={cn(
-            "h-4 w-4 transition-all duration-200 sm:h-[18px] sm:w-[18px]",
-            isWishlisted
-              ? "fill-primary text-primary"
-              : "text-muted-foreground",
+            "absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 backdrop-blur-sm transition-all duration-200 hover:bg-card sm:right-3 sm:top-3 sm:h-9 sm:w-9 z-10",
+            isWishlisted && "bg-secondary",
           )}
-        />
-      </button>
-
-      {/* Add to Cart Overlay */}
-      <div
-        className={cn(
-          "absolute inset-x-0 bottom-0 flex items-end justify-center p-3 transition-all duration-300 sm:p-4 pointer-events-none",
-          isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
-        )}
-      >
-        <Button
-          size="sm"
-          asChild
-          className="h-9 w-full rounded-lg bg-foreground text-background text-xs font-medium tracking-wide hover:bg-foreground/90 sm:h-10 sm:text-sm pointer-events-auto"
+          aria-label={
+            isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"
+          }
         >
-          <Link href={href}>
-            <ShoppingBag className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Heart
+            className={cn(
+              "h-4 w-4 transition-all duration-200 sm:h-[18px] sm:w-[18px]",
+              isWishlisted
+                ? "fill-primary text-primary"
+                : "text-muted-foreground",
+            )}
+          />
+        </button>
+
+        {/* Ver detalles overlay — inside image, clipped by overflow-hidden */}
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 p-3 transition-all duration-300 sm:p-4",
+            isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+          )}
+        >
+          <div className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-foreground py-2.5 text-xs font-medium tracking-wide text-background sm:text-sm">
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Ver detalles
-          </Link>
-        </Button>
-      </div>
+          </div>
+        </div>
+      </Link>
 
       {/* Product Info */}
       <div className="mt-3 flex flex-col gap-0.5 sm:mt-4">

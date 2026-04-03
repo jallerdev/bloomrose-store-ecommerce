@@ -132,7 +132,7 @@ export default function HomePage() {
                 size="lg"
                 className="h-12 rounded-xl bg-foreground px-8 text-sm font-medium tracking-wide text-background hover:bg-foreground/90"
               >
-                <Link href="/products">
+                <Link href="/productos">
                   Explorar Tienda
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -175,7 +175,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/products"
+              href="/productos"
               className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
             >
               Ver todo
@@ -186,7 +186,7 @@ export default function HomePage() {
             {categories.map((cat) => (
               <Link
                 key={cat.name}
-                href="/products"
+                href="/productos"
                 className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary"
               >
                 <Image
@@ -224,7 +224,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/products"
+              href="/productos"
               className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
             >
               Ver todos

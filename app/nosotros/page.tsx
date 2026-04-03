@@ -152,7 +152,7 @@ export default function NosotrosPage() {
               size="lg"
               className="mt-6 h-12 rounded-xl bg-foreground px-8 text-sm font-medium tracking-wide text-background hover:bg-foreground/90"
             >
-              <Link href="/products">
+              <Link href="/productos">
                 Explorar Tienda
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

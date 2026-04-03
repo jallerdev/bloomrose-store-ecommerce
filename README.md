@@ -7,7 +7,7 @@ A modern, elegant, and high-performance e-commerce platform designed specificall
 - **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
 - **Database & Backend:** [Supabase](https://supabase.com/) (PostgreSQL)
 - **ORM:** [Drizzle ORM](https://orm.drizzle.team/)
-- **Authentication:** [Auth0 v4](https://auth0.com/) (Server-side Session Management)
+- **Authentication:** [Supabase Auth](https://supabase.com/) via `@supabase/ssr` (Edge Middleware + Server Actions)
 - **Global State (Cart):** [Zustand](https://zustand-demo.pmnd.rs/) (with LocalStorage persistence)
 - **UI & Styling:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) base components
 - **Iconography:** [Lucide React](https://lucide.dev/)
@@ -20,10 +20,10 @@ A modern, elegant, and high-performance e-commerce platform designed specificall
    Global state managed with Zustand. Supports real-time inventory validation, individual sub-variant addition (e.g., Gold vs. Silver), and `localStorage` saving to prevent cart loss on refresh. Housed in a sleek slide-out drawer (_Sheet_).
 
 3. **Protected Admin Dashboard:**
-   An internal dashboard under the `/admin/*` path to manage products and categories. Strictly protected with Auth0 middleware (`proxy.ts`), preventing unauthorized access.
+   An internal dashboard under the `/admin/*` path to manage products and categories. Strictly protected with Supabase Edge Middleware, preventing unauthorized access.
 
 4. **Seamless Authentication Integration:**
-   Secure login flow and profile synchronization managed via `@auth0/nextjs-auth0` server-side APIs.
+   Secure login flow and profile synchronization natively managed by PostgreSQL triggers (`handle_new_user()`).
 
 ## ⚙️ Setup & Local Development
 

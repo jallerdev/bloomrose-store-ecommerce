@@ -25,6 +25,19 @@ export function CartSheet() {
 
   const totalItems = getTotalItems();
 
+  if (!mounted) {
+    return (
+      <button
+        type="button"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:cursor-default"
+        aria-label="Carrito de compras"
+        disabled
+      >
+        <ShoppingBag className="h-[18px] w-[18px]" />
+      </button>
+    );
+  }
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -33,25 +46,21 @@ export function CartSheet() {
           aria-label="Carrito de compras"
         >
           <ShoppingBag className="h-[18px] w-[18px]" />
-          {mounted && totalItems > 0 && (
+          {totalItems > 0 && (
             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col sm:max-w-md w-full border-l border-border bg-background shadow-lg pr-4">
+      <SheetContent className="flex w-full flex-col sm:max-w-md border-l border-border bg-background shadow-lg pr-4">
         <SheetHeader>
           <SheetTitle className="text-left font-serif text-2xl text-foreground">
             Tu Carrito
           </SheetTitle>
         </SheetHeader>
 
-        {!mounted ? (
-          <div className="flex flex-1 items-center justify-center">
-            <span className="text-sm text-muted-foreground">Cargando...</span>
-          </div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4">
             <ShoppingBag className="h-16 w-16 text-muted-foreground/30" />
             <p className="text-lg font-medium text-muted-foreground">
@@ -61,7 +70,7 @@ export function CartSheet() {
               asChild
               className="mt-4 rounded-xl bg-primary px-8 text-primary-foreground"
             >
-              <Link href="/products">Explorar Catálogo</Link>
+              <Link href="/productos">Explorar Catálogo</Link>
             </Button>
           </div>
         ) : (
@@ -94,9 +103,9 @@ export function CartSheet() {
                           <h3 className="line-clamp-2 text-sm font-medium text-foreground">
                             {item.title}
                           </h3>
-                          {item.variant && (
+                          {item.variantName && (
                             <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
-                              Color/Variante: {item.variant}
+                              Color/Variante: {item.variantName}
                             </p>
                           )}
                           <p className="mt-1 text-sm font-semibold text-foreground">

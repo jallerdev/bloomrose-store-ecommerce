@@ -2,21 +2,21 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface CartItem {
-  id: string; // The composite unique ID (productId + variant)
-  productId: string;
+  id: string; // The product_variant_id
+  productId: string; // Reference to the parent product (for links/images)
   title: string;
   price: number;
   imageUrl: string | null;
   stock: number;
   quantity: number;
-  variant?: string;
+  variantName?: string;
 }
 
 interface CartStore {
   items: CartItem[];
-  addItem: (
-    item: Omit<CartItem, "quantity" | "id"> & { quantity?: number },
-  ) => void;
+  userId: string | null;
+  setUserId: (id: string | null) => void;
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -28,12 +28,11 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      userId: null,
+      setUserId: (id) => set({ userId: id }),
       addItem: (item) => {
         const { items } = get();
-        const compositeId = item.variant
-          ? `${item.productId}-${item.variant}`
-          : item.productId;
-        const existingItem = items.find((i) => i.id === compositeId);
+        const existingItem = items.find((i) => i.id === item.id);
         const qtyToAdd = item.quantity || 1;
 
         if (existingItem) {
@@ -41,17 +40,14 @@ export const useCartStore = create<CartStore>()(
           if (newQty <= item.stock) {
             set({
               items: items.map((i) =>
-                i.id === compositeId ? { ...i, quantity: newQty } : i,
+                i.id === item.id ? { ...i, quantity: newQty } : i,
               ),
             });
           }
         } else {
           if (item.stock >= qtyToAdd) {
             set({
-              items: [
-                ...items,
-                { ...item, id: compositeId, quantity: qtyToAdd },
-              ],
+              items: [...items, { ...item, quantity: qtyToAdd }],
             });
           }
         }
