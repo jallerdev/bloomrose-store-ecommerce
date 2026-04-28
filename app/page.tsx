@@ -1,100 +1,43 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Truck, RotateCcw, Shield, Gem, ArrowRight } from "lucide-react";
+import { count, desc, eq } from "drizzle-orm";
+
+import { db } from "@/lib/db";
+import {
+  categories as categoriesSchema,
+  products as productsSchema,
+  productVariants,
+} from "@/lib/db/schema";
+
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
-import { Truck, RotateCcw, Shield, Gem, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 export const metadata = {
-  title: "Bloom Rose Accesorios",
+  title: "Bloomrose · Bisutería y accesorios artesanales",
   description:
-    "Accesorios femeninos elegantes y artesanales. Aretes, collares, pulseras y mas.",
-  keywords: ["Bloom Rose Accesorios", "Bloom Rose", "Accesorios"],
-  icons: {
-    icon: "/images/image.png",
-  },
+    "Accesorios artesanales para resaltar tu esencia única. Aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
+  keywords: ["Bloomrose", "bisutería", "accesorios", "joyería artesanal"],
+  icons: { icon: "/images/image.png" },
 };
 
-const featuredProducts = [
-  {
-    name: "Serpentine Gold Chain Necklace",
-    category: "Jewelry",
-    price: 68,
-    rating: 4.8,
-    reviewCount: 214,
-    image: "/images/product-necklace.jpg",
-    badge: "Bestseller",
-    badgeVariant: "bestseller" as const,
-  },
-  {
-    name: "Artisan Leather Tote",
-    category: "Bags",
-    price: 145,
-    originalPrice: 195,
-    rating: 4.6,
-    reviewCount: 87,
-    image: "/images/product-bag.jpg",
-    badge: "Sale",
-    badgeVariant: "sale" as const,
-  },
-  {
-    name: "Cashmere Blend Silk Scarf",
-    category: "Scarves",
-    price: 89,
-    rating: 4.7,
-    reviewCount: 156,
-    image: "/images/product-scarf.jpg",
-    badge: "New",
-    badgeVariant: "new" as const,
-  },
-  {
-    name: "Riviera Cat-Eye Sunglasses",
-    category: "Eyewear",
-    price: 112,
-    rating: 4.4,
-    reviewCount: 63,
-    image: "/images/product-sunglasses.jpg",
-  },
-];
-
-const categories = [
-  {
-    name: "Aretes",
-    image: "/products/earrings.jpg",
-    count: 24,
-  },
-  {
-    name: "Collares",
-    image: "/products/necklace.jpg",
-    count: 18,
-  },
-  {
-    name: "Pulseras",
-    image: "/products/bracelet.jpg",
-    count: 12,
-  },
-  {
-    name: "Anillos",
-    image: "/products/ring.jpg",
-    count: 15,
-  },
-];
+export const dynamic = "force-dynamic";
 
 const valueProps = [
   {
     icon: Truck,
-    title: "Envio gratis",
-    description: "En pedidos mayores a $299",
+    title: "Envío gratis",
+    description: "En pedidos sobre $200.000",
   },
   {
     icon: RotateCcw,
     title: "Devoluciones",
-    description: "30 dias para cambios",
+    description: "30 días para cambios",
   },
   {
     icon: Shield,
-    title: "Garantia",
+    title: "Garantía",
     description: "6 meses en todas las piezas",
   },
   {
@@ -104,7 +47,93 @@ const valueProps = [
   },
 ];
 
-export default function HomePage() {
+const NEW_BADGE_DAYS = 30;
+
+export default async function HomePage() {
+  // Productos destacados: 4 más recientes activos con al menos una variante activa.
+  const recentProducts = await db.query.products.findMany({
+    where: eq(productsSchema.isActive, true),
+    with: {
+      category: true,
+      variants: { where: eq(productVariants.isActive, true) },
+      images: {
+        orderBy: (images, { asc }) => [asc(images.displayOrder)],
+        limit: 1,
+      },
+    },
+    orderBy: [desc(productsSchema.createdAt)],
+    limit: 8, // pedimos un poco más por si alguno no tiene variantes y lo descartamos
+  });
+
+  const now = Date.now();
+  const featuredProducts = recentProducts
+    .filter((p) => p.variants.length > 0)
+    .slice(0, 4)
+    .map((p) => {
+      const v = p.variants[0];
+      const hasDiscount =
+        v.compareAtPrice && Number(v.compareAtPrice) > Number(v.price);
+      const isNew =
+        now - new Date(p.createdAt).getTime() <
+        NEW_BADGE_DAYS * 24 * 60 * 60 * 1000;
+      const badge = hasDiscount
+        ? { label: "Oferta", variant: "sale" as const }
+        : isNew
+          ? { label: "Nuevo", variant: "new" as const }
+          : null;
+      return {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        category: p.category?.name ?? "Accesorio",
+        price: Number(v.price),
+        originalPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+        material: v.name ?? undefined,
+        stock: v.stock,
+        variantCount: p.variants.length,
+        image: p.images[0]?.url ?? "",
+        badge,
+      };
+    });
+
+  // Categorías reales con conteo de productos activos.
+  const categoryRows = await db
+    .select({
+      id: categoriesSchema.id,
+      name: categoriesSchema.name,
+      slug: categoriesSchema.slug,
+      imageUrl: categoriesSchema.imageUrl,
+      productCount: count(productsSchema.id),
+    })
+    .from(categoriesSchema)
+    .leftJoin(
+      productsSchema,
+      eq(productsSchema.categoryId, categoriesSchema.id),
+    )
+    .groupBy(categoriesSchema.id, categoriesSchema.name, categoriesSchema.slug, categoriesSchema.imageUrl)
+    .orderBy(desc(count(productsSchema.id)));
+
+  // Si la categoría no tiene imageUrl propia, usamos un fallback por slug.
+  const categoryImageFallback: Record<string, string> = {
+    aretes: "/products/earrings.jpg",
+    collares: "/products/necklace.jpg",
+    pulseras: "/products/bracelet.jpg",
+    anillos: "/products/ring.jpg",
+  };
+
+  const homeCategories = categoryRows
+    .filter((c) => Number(c.productCount) > 0)
+    .slice(0, 4)
+    .map((c) => ({
+      name: c.name,
+      slug: c.slug,
+      image:
+        c.imageUrl ||
+        categoryImageFallback[c.slug] ||
+        "/placeholder.svg",
+      count: Number(c.productCount),
+    }));
+
   return (
     <main className="min-h-screen bg-background">
       <StoreHeader />
@@ -112,19 +141,18 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl flex-col-reverse items-center gap-8 px-4 py-12 sm:px-6 sm:py-20 lg:flex-row lg:gap-16 lg:px-8 lg:py-28">
-          {/* Copy */}
           <div className="flex-1 text-center lg:text-left">
             <p className="text-[11px] font-semibold uppercase tracking-extra-wide text-primary sm:text-xs">
-              Nueva Coleccion Primavera 2026
+              Nueva colección 2026
             </p>
             <h1 className="mt-3 font-serif text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl xl:text-6xl">
               Accesorios que cuentan{" "}
               <span className="text-primary">tu historia</span>
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base lg:mt-6">
-              Piezas artesanales disenadas para resaltar tu esencia unica.
-              Descubre nuestra coleccion de aretes, collares, pulseras y mucho
-              mas.
+              Piezas artesanales diseñadas para resaltar tu esencia única.
+              Descubre nuestra colección de aretes, collares, pulseras y mucho
+              más.
             </p>
             <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row lg:mt-8 lg:items-start">
               <Button
@@ -133,7 +161,7 @@ export default function HomePage() {
                 className="h-12 rounded-xl bg-foreground px-8 text-sm font-medium tracking-wide text-background hover:bg-foreground/90"
               >
                 <Link href="/productos">
-                  Explorar Tienda
+                  Explorar tienda
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -143,16 +171,15 @@ export default function HomePage() {
                 size="lg"
                 className="h-12 rounded-xl border-border px-8 text-sm font-medium tracking-wide"
               >
-                <Link href="/colecciones">Ver Colecciones</Link>
+                <Link href="/colecciones">Ver colecciones</Link>
               </Button>
             </div>
           </div>
 
-          {/* Hero Image */}
           <div className="relative aspect-[3/4] w-full max-w-xs flex-shrink-0 overflow-hidden rounded-2xl bg-secondary sm:max-w-sm lg:max-w-md">
             <Image
               src="/images/product-necklace.jpg"
-              alt="Collar artesanal Bloom Rose"
+              alt="Collar artesanal Bloomrose"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 80vw, 400px"
@@ -162,84 +189,104 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Categorias Destacadas ── */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="font-serif text-xl text-foreground sm:text-2xl">
-                Comprar por Categoria
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                Encuentra lo que buscas rapidamente
-              </p>
-            </div>
-            <Link
-              href="/productos"
-              className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
-            >
-              Ver todo
-            </Link>
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-            {categories.map((cat) => (
+      {/* ── Categorías destacadas ── */}
+      {homeCategories.length > 0 && (
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-serif text-xl text-foreground sm:text-2xl">
+                  Comprar por categoría
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                  Encuentra lo que buscas rápidamente
+                </p>
+              </div>
               <Link
-                key={cat.name}
                 href="/productos"
-                className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary"
+                className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
               >
-                <Image
-                  src={cat.image}
-                  alt={cat.name}
-                  fill
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-4">
-                  <h3 className="text-sm font-semibold text-white sm:text-base">
-                    {cat.name}
-                  </h3>
-                  <p className="text-[11px] text-white/70 sm:text-xs">
-                    {cat.count} productos
-                  </p>
-                </div>
+                Ver todo
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Productos Destacados ── */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="font-serif text-xl text-foreground sm:text-2xl">
-                Mas Populares
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                Piezas seleccionadas por nuestra comunidad
-              </p>
             </div>
-            <Link
-              href="/productos"
-              className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
-            >
-              Ver todos
-            </Link>
-          </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.name} {...product} />
-            ))}
+            <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+              {homeCategories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href="/productos"
+                  className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary"
+                >
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-4">
+                    <h3 className="text-sm font-semibold text-white sm:text-base">
+                      {cat.name}
+                    </h3>
+                    <p className="text-[11px] text-white/70 sm:text-xs">
+                      {cat.count} producto{cat.count === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── Propuesta de Valor ── */}
+      {/* ── Productos destacados ── */}
+      {featuredProducts.length > 0 && (
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-serif text-xl text-foreground sm:text-2xl">
+                  Recién llegados
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                  Las piezas más recientes de nuestra colección
+                </p>
+              </div>
+              <Link
+                href="/productos"
+                className="text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline sm:text-sm"
+              >
+                Ver todos
+              </Link>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
+              {featuredProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  productId={p.id}
+                  slug={p.slug}
+                  name={p.title}
+                  category={p.category}
+                  price={p.price}
+                  originalPrice={p.originalPrice}
+                  material={p.material}
+                  stock={p.stock}
+                  variantCount={p.variantCount}
+                  image={p.image}
+                  rating={5}
+                  reviewCount={0}
+                  badge={p.badge?.label}
+                  badgeVariant={p.badge?.variant}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Propuesta de valor ── */}
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:grid-cols-4">
@@ -268,7 +315,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="relative overflow-hidden rounded-2xl bg-foreground px-6 py-12 text-center sm:px-12 sm:py-16">
             <h2 className="font-serif text-2xl text-background sm:text-3xl lg:text-4xl">
-              Se parte de nuestra comunidad
+              Sé parte de nuestra comunidad
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-background/70">
               Recibe acceso anticipado a nuevos lanzamientos, promociones
@@ -304,11 +351,12 @@ export default function HomePage() {
                 className="rounded-full"
               />
               <span className="font-serif text-base text-foreground">
-                Bloom Rose
+                Bloomrose
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              © 2026 Bloom Rose. Todos los derechos reservados.
+              © {new Date().getFullYear()} Bloomrose. Todos los derechos
+              reservados.
             </p>
           </div>
         </div>
