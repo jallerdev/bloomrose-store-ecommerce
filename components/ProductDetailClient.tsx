@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Heart,
   Minus,
   Plus,
   Share2,
@@ -20,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { WishlistButton } from "@/components/WishlistButton";
 
 export interface VariantDTO {
   id: string;
@@ -51,7 +51,6 @@ const LOW_STOCK = 5;
 export function ProductDetailClient({ product, variants }: Props) {
   const [selected, setSelected] = useState<VariantDTO>(variants[0]);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const price = Number(selected.price);
   const compareAt = selected.compareAtPrice
@@ -218,24 +217,7 @@ export function ProductDetailClient({ product, variants }: Props) {
           className="h-12 flex-1 rounded-xl bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 disabled:opacity-50"
         />
 
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className={cn(
-            "h-12 w-12 flex-shrink-0 rounded-xl",
-            isWishlisted && "border-primary bg-secondary",
-          )}
-          onClick={() => setIsWishlisted((w) => !w)}
-          aria-label={isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"}
-        >
-          <Heart
-            className={cn(
-              "h-5 w-5",
-              isWishlisted ? "fill-primary text-primary" : "text-muted-foreground",
-            )}
-          />
-        </Button>
+        <WishlistButton productId={product.id} variant="lg" />
 
         <Button
           type="button"

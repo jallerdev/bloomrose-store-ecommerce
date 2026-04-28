@@ -1,101 +1,175 @@
-import { db } from "@/lib/db";
-import { categories } from "@/lib/db/schema";
-import { createCategory, deleteCategory } from "./actions";
+import { Tag } from "lucide-react";
+import { count, eq } from "drizzle-orm";
 
-export const metadata = {
-  title: "Admin - Categorías",
-};
+import { db } from "@/lib/db";
+import { categories, products } from "@/lib/db/schema";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+
+import { createCategory } from "./actions";
+import { CategoryDeleteButton } from "./CategoryDeleteButton";
+
+export const metadata = { title: "Categorías — Admin Bloomrose" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
-  const categoriesList = await db.select().from(categories);
+  const rows = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+      slug: categories.slug,
+      description: categories.description,
+      productCount: count(products.id),
+    })
+    .from(categories)
+    .leftJoin(products, eq(products.categoryId, categories.id))
+    .groupBy(categories.id, categories.name, categories.slug, categories.description)
+    .orderBy(categories.name);
 
   return (
     <div>
-      <h1 className="font-serif text-3xl mb-8 text-foreground">Categorías</h1>
+      <div className="mb-6">
+        <h1 className="font-serif text-3xl text-foreground">Categorías</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {rows.length} categoría{rows.length !== 1 ? "s" : ""}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Form */}
-        <div className="md:col-span-1 bg-card border-border border rounded-xl p-6 h-max">
-          <h2 className="font-serif text-xl mb-4 text-foreground">
-            Nueva Categoría
-          </h2>
+        <aside className="rounded-xl border border-border bg-card p-6 lg:col-span-1">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+              <Tag className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-serif text-lg text-foreground">
+                Nueva categoría
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Agrupa productos por estilo o tipo
+              </p>
+            </div>
+          </div>
+
           <form action={createCategory} className="flex flex-col gap-4">
             <div>
-              <label className="text-sm font-medium">Nombre</label>
-              <input
+              <Label htmlFor="name" className="text-xs text-muted-foreground">
+                Nombre
+              </Label>
+              <Input
+                id="name"
                 name="name"
                 required
-                className="w-full mt-1 h-10 px-3 bg-background border border-border rounded-md"
+                placeholder="Ej. Aretes"
+                className="mt-1 h-10 border-border bg-background text-sm"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Slug</label>
-              <input
+              <Label htmlFor="slug" className="text-xs text-muted-foreground">
+                Slug
+              </Label>
+              <Input
+                id="slug"
                 name="slug"
                 required
-                className="w-full mt-1 h-10 px-3 bg-background border border-border rounded-md"
+                placeholder="aretes"
+                className="mt-1 h-10 border-border bg-background font-mono text-sm"
               />
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Solo minúsculas, números y guiones.
+              </p>
             </div>
             <div>
-              <label className="text-sm font-medium">Descripción</label>
-              <textarea
+              <Label
+                htmlFor="description"
+                className="text-xs text-muted-foreground"
+              >
+                Descripción
+              </Label>
+              <Textarea
+                id="description"
                 name="description"
-                className="w-full mt-1 p-3 bg-background border border-border rounded-md"
+                rows={3}
+                placeholder="Opcional. Aparece en la página de categoría."
+                className="mt-1 border-border bg-background text-sm"
               />
             </div>
-            <button
+            <Button
               type="submit"
-              className="h-10 bg-foreground text-background rounded-md font-medium px-4 mt-2 hover:bg-foreground/90 transition-colors"
+              className="rounded-xl bg-foreground text-background hover:bg-foreground/90"
             >
-              Guardar Categoría
-            </button>
+              Crear categoría
+            </Button>
           </form>
-        </div>
+        </aside>
 
         {/* List */}
-        <div className="md:col-span-2 bg-card border-border border rounded-xl overflow-hidden self-start">
-          <table className="w-full text-left text-sm text-foreground">
-            <thead className="border-b border-border bg-secondary/50 text-muted-foreground text-xs uppercase">
-              <tr>
-                <th className="px-6 py-4 font-medium">Nombre</th>
-                <th className="px-6 py-4 font-medium">Descripción</th>
-                <th className="px-6 py-4 font-medium text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {categoriesList.map((cat) => (
-                <tr
-                  key={cat.id}
-                  className="hover:bg-secondary/20 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-foreground">
-                      {cat.name}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      /{cat.slug}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-muted-foreground truncate max-w-[200px]">
-                    {cat.description || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <form
-                      action={async () => {
-                        "use server";
-                        await deleteCategory(cat.id);
-                      }}
-                    >
-                      <button className="text-red-500 hover:text-red-700 font-medium transition-colors">
-                        Eliminar
-                      </button>
-                    </form>
-                  </td>
+        <section className="overflow-hidden rounded-xl border border-border bg-card lg:col-span-2">
+          {rows.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Tag className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Aún no tienes categorías.
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/30">
+                <tr>
+                  <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Categoría
+                  </th>
+                  <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">
+                    Descripción
+                  </th>
+                  <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Productos
+                  </th>
+                  <th className="w-10 px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {rows.map((cat) => (
+                  <tr
+                    key={cat.id}
+                    className="transition-colors hover:bg-muted/30"
+                  >
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-foreground">{cat.name}</p>
+                      <p className="font-mono text-[10px] text-muted-foreground">
+                        /{cat.slug}
+                      </p>
+                    </td>
+                    <td className="hidden max-w-xs px-4 py-3 sm:table-cell">
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {cat.description || "—"}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className={`inline-flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-medium tabular-nums ${
+                          Number(cat.productCount) > 0
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {Number(cat.productCount)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <CategoryDeleteButton id={cat.id} name={cat.name} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
       </div>
     </div>
   );

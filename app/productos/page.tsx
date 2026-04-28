@@ -143,6 +143,7 @@ export default async function ProductosPage(props: {
                 {catalogView.map((product) => (
                   <ProductCard
                     key={product.id}
+                    productId={product.id}
                     name={product.name}
                     slug={product.slug}
                     category={product.category}

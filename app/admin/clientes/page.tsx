@@ -1,107 +1,124 @@
+import { Users } from "lucide-react";
+import { desc, ilike, or } from "drizzle-orm";
+
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
 import { CustomerTableActions } from "./CustomerTableActions";
+import { TableSearch } from "@/components/admin/TableSearch";
 
-export const metadata = { title: "Clientes — Admin Bloom Rose" };
+export const metadata = { title: "Clientes — Admin Bloomrose" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminClientesPage() {
+interface PageProps {
+  searchParams: Promise<{ q?: string }>;
+}
+
+export default async function AdminClientesPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const q = params.q?.trim();
+
   const clientes = await db.query.profiles.findMany({
     with: { orders: true },
+    where: q
+      ? or(
+          ilike(profiles.email, `%${q}%`),
+          ilike(profiles.firstName, `%${q}%`),
+          ilike(profiles.lastName, `%${q}%`),
+          ilike(profiles.phone, `%${q}%`),
+        )
+      : undefined,
     orderBy: [desc(profiles.createdAt)],
   });
+
+  const adminCount = clientes.filter((c) => c.role === "ADMIN").length;
+  const customerCount = clientes.length - adminCount;
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="font-serif text-3xl text-foreground">Clientes</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {clientes.length} cliente{clientes.length !== 1 ? "s" : ""}{" "}
-          registrados
+          {clientes.length} cuenta{clientes.length !== 1 ? "s" : ""}
+          {!q && (
+            <> · {customerCount} clientes · {adminCount} admins</>
+          )}
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-secondary/40">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Cliente
-              </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground sm:table-cell">
-                Teléfono
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Pedidos
-              </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground md:table-cell">
-                Rol
-              </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground lg:table-cell">
-                Registrado
-              </th>
-              <th className="w-10 px-4 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {clientes.length === 0 ? (
+      <div className="mb-4">
+        <TableSearch placeholder="Buscar por nombre, email o teléfono..." />
+      </div>
+
+      {clientes.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card py-16 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Users className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {q ? `No hay resultados para "${q}".` : "Aún no hay clientes."}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30">
               <tr>
-                <td
-                  colSpan={6}
-                  className="py-16 text-center text-sm text-muted-foreground"
-                >
-                  No hay clientes aún.
-                </td>
+                <Th>Cliente</Th>
+                <Th className="hidden sm:table-cell">Teléfono</Th>
+                <Th className="text-center">Pedidos</Th>
+                <Th className="hidden md:table-cell">Rol</Th>
+                <Th className="hidden lg:table-cell">Registrado</Th>
+                <Th className="w-10" />
               </tr>
-            ) : (
-              clientes.map((c) => (
+            </thead>
+            <tbody className="divide-y divide-border">
+              {clientes.map((c) => (
                 <tr
                   key={c.id}
-                  className="transition-colors hover:bg-secondary/20"
+                  className="group transition-colors hover:bg-muted/30"
                 >
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                        {c.firstName?.[0] || c.email[0].toUpperCase()}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs font-bold text-primary-foreground">
+                        {(c.firstName?.[0] || c.email[0]).toUpperCase()}
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {c.firstName
-                            ? `${c.firstName} ${c.lastName ?? ""}`.trim()
-                            : "—"}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {[c.firstName, c.lastName]
+                            .filter(Boolean)
+                            .join(" ") || "—"}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="truncate text-xs text-muted-foreground">
                           {c.email}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="hidden px-4 py-3.5 text-xs text-muted-foreground sm:table-cell">
+                  <td className="hidden px-4 py-3 text-xs text-muted-foreground sm:table-cell">
                     {c.phone || "—"}
                   </td>
-                  <td className="px-4 py-3.5 text-center text-sm font-medium text-foreground">
+                  <td className="px-4 py-3 text-center text-sm font-medium tabular-nums text-foreground">
                     {c.orders.length}
                   </td>
-                  <td className="hidden px-4 py-3.5 md:table-cell">
+                  <td className="hidden px-4 py-3 md:table-cell">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                         c.role === "ADMIN"
-                          ? "bg-primary/20 text-primary"
-                          : "bg-secondary text-muted-foreground"
+                          ? "bg-primary/15 text-primary"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {c.role}
                     </span>
                   </td>
-                  <td className="hidden px-4 py-3.5 text-xs text-muted-foreground lg:table-cell">
+                  <td className="hidden px-4 py-3 text-xs text-muted-foreground lg:table-cell">
                     {new Date(c.createdAt).toLocaleDateString("es-CO", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
                     })}
                   </td>
-                  <td className="px-4 py-3.5 text-right">
+                  <td className="px-4 py-3 text-right">
                     <CustomerTableActions
                       userId={c.id}
                       userRole={c.role}
@@ -109,11 +126,27 @@ export default async function AdminClientesPage() {
                     />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
+  );
+}
+
+function Th({
+  children,
+  className = "",
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <th
+      className={`px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ${className}`}
+    >
+      {children}
+    </th>
   );
 }

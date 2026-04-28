@@ -182,6 +182,23 @@ export const orderItems = pgTable("order_items", {
 // 4. ENGAGEMENT
 // ------------------------------------------------------
 
+export const wishlistItems = pgTable(
+  "wishlist_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    profileId: uuid("profile_id")
+      .references(() => profiles.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: uuid("product_id")
+      .references(() => products.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    unq: uniqueIndex("wishlist_profile_product_idx").on(t.profileId, t.productId),
+  }),
+);
+
 export const reviews = pgTable(
   "reviews",
   {
@@ -210,6 +227,18 @@ export const profilesRelations = relations(profiles, ({ many }) => ({
   addresses: many(addresses),
   orders: many(orders),
   reviews: many(reviews),
+  wishlistItems: many(wishlistItems),
+}));
+
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [wishlistItems.profileId],
+    references: [profiles.id],
+  }),
+  product: one(products, {
+    fields: [wishlistItems.productId],
+    references: [products.id],
+  }),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({

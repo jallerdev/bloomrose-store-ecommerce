@@ -3,11 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingBag, Star, Truck } from "lucide-react";
+import { ShoppingBag, Star, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { WishlistButton } from "@/components/WishlistButton";
 
 interface ProductCardProps {
+  /** ID del producto raíz — necesario para wishlist. Opcional para retrocompat. */
+  productId?: string;
   name: string;
   category: string;
   price: number;
@@ -38,6 +41,7 @@ const fmtCOP = (n: number) =>
   }).format(n);
 
 export function ProductCard({
+  productId,
   name,
   category,
   price,
@@ -52,7 +56,6 @@ export function ProductCard({
   badgeVariant = "new",
   slug,
 }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const href = slug ? `/productos/${slug}` : "#";
@@ -120,29 +123,11 @@ export function ProductCard({
         </div>
 
         {/* Wishlist */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            setIsWishlisted(!isWishlisted);
-          }}
-          className={cn(
-            "absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 backdrop-blur-sm transition-all duration-200 hover:bg-card sm:right-3 sm:top-3 sm:h-9 sm:w-9",
-            isWishlisted && "bg-secondary",
-          )}
-          aria-label={
-            isWishlisted ? "Quitar de favoritos" : "Agregar a favoritos"
-          }
-        >
-          <Heart
-            className={cn(
-              "h-4 w-4 transition-all duration-200 sm:h-[18px] sm:w-[18px]",
-              isWishlisted
-                ? "fill-primary text-primary"
-                : "text-muted-foreground",
-            )}
-          />
-        </button>
+        {productId && (
+          <div className="absolute right-2.5 top-2.5 z-10 sm:right-3 sm:top-3">
+            <WishlistButton productId={productId} onClickStop />
+          </div>
+        )}
 
         {/* Pill envío gratis */}
         {hasFreeShipping && !isOutOfStock && (

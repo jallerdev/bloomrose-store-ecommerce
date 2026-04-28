@@ -16,7 +16,9 @@ import { logoutAction } from "@/app/auth/actions";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart";
+import { useWishlistStore } from "@/lib/store/wishlist";
 import { CartSheet } from "@/components/CartSheet";
+import { WishlistHeaderButton } from "@/components/WishlistHeaderButton";
 
 const navItems = [
   { label: "Tienda", href: "/productos" },
@@ -35,14 +37,17 @@ export function StoreHeaderClient({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const setUserId = useCartStore((state) => state.setUserId);
+  const setWishlistUserId = useWishlistStore((state) => state.setUserId);
 
   useEffect(() => {
     if (serverUser?.id) {
       setUserId(serverUser.id);
+      void setWishlistUserId(serverUser.id);
     } else {
       setUserId(null);
+      void setWishlistUserId(null);
     }
-  }, [serverUser, setUserId]);
+  }, [serverUser, setUserId, setWishlistUserId]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
@@ -199,6 +204,7 @@ export function StoreHeaderClient({
           >
             <Search className="h-[18px] w-[18px]" />
           </button>
+          <WishlistHeaderButton />
           <CartSheet />
         </div>
       </div>

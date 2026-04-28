@@ -248,6 +248,7 @@ export default async function ProductPage({
                 return (
                   <ProductCard
                     key={p.id}
+                    productId={p.id}
                     name={p.title}
                     slug={p.slug}
                     category={product.category?.name ?? "Accesorio"}
