@@ -59,7 +59,12 @@ export default async function ProductosPage(props: {
         slug: product.slug,
         category: product.category?.name || "Accesorio",
         price: Number(defaultVariant.price),
-        material: defaultVariant.name,
+        originalPrice: defaultVariant.compareAtPrice
+          ? Number(defaultVariant.compareAtPrice)
+          : undefined,
+        material: defaultVariant.name ?? undefined,
+        stock: defaultVariant.stock as number,
+        variantCount: product.variants.length,
         image: defaultImage,
         rating: 5,
         reviewCount: 12,
@@ -142,6 +147,10 @@ export default async function ProductosPage(props: {
                     slug={product.slug}
                     category={product.category}
                     price={product.price}
+                    originalPrice={product.originalPrice}
+                    material={product.material}
+                    stock={product.stock}
+                    variantCount={product.variantCount}
                     image={product.image}
                     rating={product.rating}
                     reviewCount={product.reviewCount}

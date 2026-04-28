@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -66,6 +67,11 @@ export async function signupAction(formData: FormData) {
     } catch (err) {
       console.error("Failed to sync profile manually:", err);
     }
+
+    // Email de bienvenida (no bloqueante)
+    sendWelcomeEmail({ email, firstName }).catch((e) =>
+      console.error("Welcome email failed:", e),
+    );
   }
 
   // Redirigir post-registro

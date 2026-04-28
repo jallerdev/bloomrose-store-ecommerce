@@ -88,7 +88,14 @@ export const productVariants = pgTable("product_variants", {
   sku: varchar("sku", { length: 100 }).notNull().unique(),
   name: varchar("name", { length: 100 }), // Ej: "Baño de Oro", "Acero Inoxidable"
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  // Precio "antes" para mostrar tachado cuando price < compareAtPrice
+  compareAtPrice: decimal("compare_at_price", { precision: 10, scale: 2 }),
   stock: integer("stock").default(0).notNull(),
+  // Datos físicos requeridos por Coordinadora para cotizar envío
+  weightGrams: integer("weight_grams"),
+  lengthCm: integer("length_cm"),
+  widthCm: integer("width_cm"),
+  heightCm: integer("height_cm"),
   isActive: boolean("is_active").default(true).notNull(),
 });
 
@@ -111,13 +118,46 @@ export const orders = pgTable("orders", {
   profileId: uuid("profile_id")
     .references(() => profiles.id)
     .notNull(),
-  addressId: uuid("address_id")
-    .references(() => addresses.id)
-    .notNull(),
+  // Referencia "viva" a la dirección (puede ser null si el usuario la borra).
+  // El snapshot de la dirección se guarda más abajo para inmutabilidad.
+  addressId: uuid("address_id").references(() => addresses.id),
   status: orderStatusEnum("status").default("PENDING").notNull(),
+
+  // Desglose de montos (todos en COP)
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 })
+    .default("0")
+    .notNull(),
+  discountTotal: decimal("discount_total", { precision: 10, scale: 2 })
+    .default("0")
+    .notNull(),
+  shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 })
+    .default("0")
+    .notNull(),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+
+  // Snapshot de dirección de envío (inmutable)
+  shippingFullName: varchar("shipping_full_name", { length: 255 }),
+  shippingPhone: varchar("shipping_phone", { length: 50 }),
+  shippingAddressLine1: text("shipping_address_line_1"),
+  shippingAddressLine2: text("shipping_address_line_2"),
+  shippingCity: varchar("shipping_city", { length: 100 }),
+  shippingDepartment: varchar("shipping_department", { length: 100 }),
+  shippingPostalCode: varchar("shipping_postal_code", { length: 20 }),
+  shippingCountry: varchar("shipping_country", { length: 100 })
+    .default("Colombia")
+    .notNull(),
+
+  // Envío
+  shippingCarrier: varchar("shipping_carrier", { length: 50 })
+    .default("Coordinadora")
+    .notNull(),
+  trackingNumber: varchar("tracking_number", { length: 100 }),
+
+  // Pago (Wompi)
   paymentMethod: varchar("payment_method", { length: 100 }),
   paymentId: varchar("payment_id", { length: 255 }),
+  paymentReference: varchar("payment_reference", { length: 255 }).unique(),
+
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

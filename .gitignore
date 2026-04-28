@@ -10,3 +10,7 @@ node_modules/
 .next/
 .env*.local
 .DS_Store.env.local
+
+# Build artifacts
+tsconfig.tsbuildinfo
+next-env.d.ts
