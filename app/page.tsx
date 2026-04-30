@@ -605,8 +605,10 @@ export default async function HomePage() {
                 cuentan su propia historia.
               </p>
               <a
-                href="#"
-                aria-label="Instagram"
+                href="https://instagram.com/bloomrose.store"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram @bloomrose.store"
                 className="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Instagram className="h-4 w-4" />
@@ -633,10 +635,10 @@ export default async function HomePage() {
             <FooterColumn
               title="Ayuda"
               links={[
-                { label: "Envíos", href: "#" },
-                { label: "Devoluciones", href: "#" },
-                { label: "Cuidado de joyas", href: "#" },
-                { label: "Contacto", href: "#" },
+                { label: "Envíos", href: "/envios" },
+                { label: "Devoluciones", href: "/devoluciones" },
+                { label: "Cuidado de joyas", href: "/cuidado-de-joyas" },
+                { label: "Contacto", href: "/contacto" },
               ]}
             />
           </div>
