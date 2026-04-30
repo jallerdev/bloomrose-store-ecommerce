@@ -1,11 +1,16 @@
-import { db } from "@/lib/db";
-import { products as productsSchema, productVariants } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import { Suspense } from "react";
+import { Tag } from "lucide-react";
+import { eq } from "drizzle-orm";
+
+import { db } from "@/lib/db";
+import {
+  products as productsSchema,
+  productVariants,
+} from "@/lib/db/schema";
+
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductFilters } from "@/components/ProductFilters";
-import { Tag } from "lucide-react";
+import { ProductFilters, type FilterFacets } from "@/components/ProductFilters";
 
 export const dynamic = "force-dynamic";
 
@@ -23,68 +28,157 @@ export const metadata = {
   },
 };
 
+interface ProductRow {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  category: { name: string; slug: string } | null;
+  variants: {
+    name: string | null;
+    price: string;
+    compareAtPrice: string | null;
+    stock: number;
+  }[];
+  images: { url: string }[];
+}
+
 export default async function ProductosPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await props.searchParams;
+  const q = typeof params.q === "string" ? params.q.trim() : "";
+  const categorySlug =
+    typeof params.category === "string" ? params.category : undefined;
   const material =
     typeof params.material === "string" ? params.material : undefined;
-  const maxPrice =
+  const maxPriceParam =
     typeof params.maxPrice === "string"
       ? parseFloat(params.maxPrice)
       : undefined;
 
-  let productsData: any[] = [];
-  let error = null;
-
+  // Catálogo activo + relaciones para construir facets dinámicas
+  let allActiveProducts: ProductRow[] = [];
+  let dbError: unknown = null;
   try {
-    productsData = await db.query.products.findMany({
+    const rows = await db.query.products.findMany({
       where: eq(productsSchema.isActive, true),
       with: {
         category: true,
-        variants: {
-          where: eq(productVariants.isActive, true),
-        },
+        variants: { where: eq(productVariants.isActive, true) },
         images: {
           orderBy: (images, { asc }) => [asc(images.displayOrder)],
+          limit: 1,
         },
       },
       orderBy: (products, { desc }) => [desc(products.createdAt)],
     });
+    allActiveProducts = rows.map((p) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      description: p.description,
+      category: p.category
+        ? { name: p.category.name, slug: p.category.slug }
+        : null,
+      variants: p.variants.map((v) => ({
+        name: v.name,
+        price: v.price,
+        compareAtPrice: v.compareAtPrice,
+        stock: v.stock,
+      })),
+      images: p.images.map((i) => ({ url: i.url })),
+    }));
   } catch (err) {
-    error = err;
+    dbError = err;
     console.error("Database fetch error in products catalog", err);
   }
 
-  const catalogView = productsData
-    .filter((p) => p.variants && p.variants.length > 0)
+  // ── Facets dinámicas (categorías, materiales, rango de precio)
+  const allCategoriesMap = new Map<string, { slug: string; name: string }>();
+  const allMaterialsSet = new Set<string>();
+  let priceMin = Number.POSITIVE_INFINITY;
+  let priceMax = 0;
+
+  for (const p of allActiveProducts) {
+    if (p.variants.length === 0) continue;
+    if (p.category) {
+      allCategoriesMap.set(p.category.slug, {
+        slug: p.category.slug,
+        name: p.category.name,
+      });
+    }
+    for (const v of p.variants) {
+      if (v.name) allMaterialsSet.add(v.name);
+      const price = Number(v.price);
+      if (price < priceMin) priceMin = price;
+      if (price > priceMax) priceMax = price;
+    }
+  }
+  if (priceMin === Number.POSITIVE_INFINITY) {
+    priceMin = 0;
+    priceMax = 500_000;
+  } else {
+    priceMin = Math.floor(priceMin / 1000) * 1000;
+    priceMax = Math.ceil(priceMax / 1000) * 1000;
+  }
+
+  const facets: FilterFacets = {
+    categories: Array.from(allCategoriesMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    ),
+    materials: Array.from(allMaterialsSet).sort((a, b) => a.localeCompare(b)),
+    priceRange: { min: priceMin, max: priceMax },
+  };
+
+  // ── Aplicar filtros sobre el catálogo cargado
+  const catalogView = allActiveProducts
+    .filter((p) => p.variants.length > 0)
     .map((product) => {
       const defaultVariant = product.variants[0];
-      const defaultImage = product.images?.[0]?.url || "";
-      const totalStock = product.variants.reduce(
-        (acc: number, v: { stock: number }) => acc + v.stock,
-        0,
+      const totalStock = product.variants.reduce((acc, v) => acc + v.stock, 0);
+      const materials = product.variants
+        .map((v) => v.name)
+        .filter((x): x is string => Boolean(x));
+      const minVariantPrice = Math.min(
+        ...product.variants.map((v) => Number(v.price)),
       );
       return {
         id: product.id,
         name: product.title,
         slug: product.slug,
-        category: product.category?.name || "Accesorio",
+        category: product.category?.name ?? "Accesorio",
+        categorySlug: product.category?.slug ?? null,
         price: Number(defaultVariant.price),
+        minVariantPrice,
         originalPrice: defaultVariant.compareAtPrice
           ? Number(defaultVariant.compareAtPrice)
           : undefined,
         material: defaultVariant.name ?? undefined,
+        materials,
         stock: totalStock,
         variantCount: product.variants.length,
-        image: defaultImage,
+        image: product.images[0]?.url ?? "",
         rating: 5,
-        reviewCount: 12,
+        reviewCount: 0,
+        searchHaystack:
+          `${product.title} ${product.description} ${product.category?.name ?? ""} ${materials.join(" ")}`.toLowerCase(),
       };
     })
     .filter((p) => {
-      if (material && p.material !== material) return false;
-      if (maxPrice && !isNaN(maxPrice) && p.price > maxPrice) return false;
+      if (categorySlug && p.categorySlug !== categorySlug) return false;
+      if (material && !p.materials.includes(material)) return false;
+      if (
+        maxPriceParam !== undefined &&
+        !isNaN(maxPriceParam) &&
+        maxPriceParam < facets.priceRange.max &&
+        p.minVariantPrice > maxPriceParam
+      )
+        return false;
+      if (q) {
+        const needle = q.toLowerCase();
+        if (!p.searchHaystack.includes(needle)) return false;
+      }
       return true;
     });
 
@@ -92,7 +186,6 @@ export default async function ProductosPage(props: {
     <main className="min-h-screen bg-background">
       <StoreHeader />
 
-      {/* Page Header */}
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
@@ -105,21 +198,18 @@ export default async function ProductosPage(props: {
         </div>
       </section>
 
-      {/* Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Sidebar */}
           <aside className="w-full flex-shrink-0 lg:w-64">
             <Suspense
               fallback={
                 <div className="h-64 w-full animate-pulse rounded-xl bg-card" />
               }
             >
-              <ProductFilters />
+              <ProductFilters facets={facets} />
             </Suspense>
           </aside>
 
-          {/* Products Grid */}
           <section className="flex-1">
             <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
               <p className="text-xs text-muted-foreground sm:text-sm">
@@ -127,11 +217,19 @@ export default async function ProductosPage(props: {
                 <span className="font-semibold text-foreground">
                   {catalogView.length}
                 </span>{" "}
-                productos
+                {catalogView.length === 1 ? "producto" : "productos"}
+                {q && (
+                  <>
+                    {" "}
+                    para &quot;
+                    <span className="font-semibold text-foreground">{q}</span>
+                    &quot;
+                  </>
+                )}
               </p>
             </div>
 
-            {error ? (
+            {dbError ? (
               <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6">
                 <p className="text-sm text-destructive">
                   Hubo un error al conectar con la base de datos. Verifica tus
@@ -147,7 +245,7 @@ export default async function ProductosPage(props: {
                   No se encontraron productos
                 </h3>
                 <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-                  Intenta ajustar los filtros para visualizar otros resultados.
+                  Intenta ajustar los filtros o probar otra búsqueda.
                 </p>
               </div>
             ) : (

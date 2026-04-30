@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Users,
   Tag,
+  Ticket,
   Flower2,
   Menu,
   X,
@@ -42,6 +43,7 @@ function buildLinks(pendingOrdersCount: number): SidebarLinkData[] {
       icon: ShoppingCart,
       badge: pendingOrdersCount,
     },
+    { label: "Cupones", href: "/admin/cupones", icon: Ticket },
     { label: "Clientes", href: "/admin/clientes", icon: Users },
   ];
 }

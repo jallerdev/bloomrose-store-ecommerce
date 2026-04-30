@@ -24,6 +24,16 @@ export const orderStatusEnum = pgEnum("order_status", [
   "DELIVERED",
   "CANCELLED",
 ]);
+export const couponTypeEnum = pgEnum("coupon_type", [
+  "PERCENTAGE",
+  "FIXED",
+  "FREE_SHIPPING",
+]);
+export const couponAppliesToEnum = pgEnum("coupon_applies_to", [
+  "ALL",
+  "CATEGORY",
+  "PRODUCT",
+]);
 
 // ------------------------------------------------------
 // 1. USUARIOS Y PERFILES (Integración con Supabase Auth)
@@ -135,6 +145,8 @@ export const orders = pgTable("orders", {
   shippingCost: decimal("shipping_cost", { precision: 10, scale: 2 })
     .default("0")
     .notNull(),
+  /** Snapshot del código del cupón aplicado (si lo hubo). */
+  couponCode: varchar("coupon_code", { length: 50 }),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
 
   // Snapshot de dirección de envío (inmutable)
@@ -183,6 +195,48 @@ export const orderItems = pgTable("order_items", {
 // ------------------------------------------------------
 // 4. ENGAGEMENT
 // ------------------------------------------------------
+
+// ------------------------------------------------------
+// CUPONES Y DESCUENTOS
+// ------------------------------------------------------
+
+export const coupons = pgTable("coupons", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  type: couponTypeEnum("type").notNull(),
+  /** Para PERCENTAGE: 10 = 10%. Para FIXED: monto en COP. Para FREE_SHIPPING: 0. */
+  value: decimal("value", { precision: 10, scale: 2 }).default("0").notNull(),
+  /** Compra mínima para aplicar el cupón (subtotal antes de envío). */
+  minPurchase: decimal("min_purchase", { precision: 10, scale: 2 }),
+  /** Tope global de usos. NULL = ilimitado. */
+  maxUses: integer("max_uses"),
+  /** Tope por usuario (solo aplica a usuarios autenticados). NULL = ilimitado. */
+  maxUsesPerUser: integer("max_uses_per_user"),
+  startsAt: timestamp("starts_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").default(true).notNull(),
+  appliesTo: couponAppliesToEnum("applies_to").default("ALL").notNull(),
+  /** Cuando appliesTo = CATEGORY o PRODUCT, lista de UUIDs. */
+  targetIds: text("target_ids").array(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const couponRedemptions = pgTable("coupon_redemptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  couponId: uuid("coupon_id")
+    .references(() => coupons.id, { onDelete: "cascade" })
+    .notNull(),
+  /** Null cuando es un guest checkout. */
+  profileId: uuid("profile_id").references(() => profiles.id, {
+    onDelete: "set null",
+  }),
+  orderId: uuid("order_id")
+    .references(() => orders.id, { onDelete: "cascade" })
+    .notNull(),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).notNull(),
+  redeemedAt: timestamp("redeemed_at").defaultNow().notNull(),
+});
 
 export const wishlistItems = pgTable(
   "wishlist_items",

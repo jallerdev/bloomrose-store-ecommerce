@@ -17,7 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { createPendingOrderAction } from "./actions";
+import { checkCouponAction } from "./coupon-actions";
 import { estimateShippingCost } from "@/lib/shipping";
+import { Tag, X as XIcon } from "lucide-react";
 
 interface AddressDTO {
   id: string;
@@ -77,6 +79,15 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   });
   const [notes, setNotes] = useState("");
 
+  // Cupón
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+    freeShipping: boolean;
+  } | null>(null);
+
   const subtotal = mounted ? getTotalPrice() : 0;
 
   const cityForShipping = useMemo(() => {
@@ -84,10 +95,12 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
     return addresses.find((a) => a.id === existingAddressId)?.city ?? "";
   }, [addressMode, newAddr.city, existingAddressId, addresses]);
 
-  const shippingCost = cityForShipping
+  const baseShippingCost = cityForShipping
     ? estimateShippingCost({ city: cityForShipping, subtotal })
     : 0;
-  const total = subtotal + shippingCost;
+  const shippingCost = appliedCoupon?.freeShipping ? 0 : baseShippingCost;
+  const discount = appliedCoupon?.discountAmount ?? 0;
+  const total = Math.max(0, subtotal - discount + shippingCost);
 
   if (!mounted) {
     return (
@@ -116,6 +129,35 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
         </Button>
       </div>
     );
+  }
+
+  async function handleApplyCoupon() {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    try {
+      const r = await checkCouponAction({
+        code,
+        items: items.map((i) => ({ variantId: i.id, quantity: i.quantity })),
+      });
+      if (!r.ok) {
+        toast.error(r.error);
+        return;
+      }
+      setAppliedCoupon({
+        code: r.coupon.code,
+        discountAmount: r.coupon.discountAmount,
+        freeShipping: r.coupon.freeShipping,
+      });
+      setCouponInput("");
+      toast.success("Cupón aplicado");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -147,6 +189,7 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
         contactFullName,
         contactPhone,
         contactEmail: contactEmail.trim() || undefined,
+        couponCode: appliedCoupon?.code ?? null,
         notes: notes || null,
       });
 
@@ -416,11 +459,80 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
 
         <Separator className="my-5" />
 
+        {/* Cupón de descuento */}
+        <div className="mb-4">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 text-sm">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-emerald-600" />
+                <div className="leading-tight">
+                  <p className="font-medium text-foreground">
+                    {appliedCoupon.code}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {appliedCoupon.freeShipping && appliedCoupon.discountAmount === 0
+                      ? "Envío gratis"
+                      : `Descuento ${fmt(appliedCoupon.discountAmount)}`}
+                    {appliedCoupon.freeShipping && appliedCoupon.discountAmount > 0
+                      ? " · Envío gratis"
+                      : ""}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+                aria-label="Quitar cupón"
+              >
+                <XIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Tag className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="Código de descuento"
+                  className="h-10 border-border bg-background pl-9 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleApplyCoupon();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApplyCoupon}
+                disabled={couponLoading || !couponInput.trim()}
+                className="h-10 shrink-0"
+              >
+                {couponLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Aplicar"
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+
         <div className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="text-foreground">{fmt(subtotal)}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-emerald-600">
+              <span>Descuento</span>
+              <span>-{fmt(discount)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">Envío</span>
             <span className="text-foreground">

@@ -10,6 +10,8 @@ import {
 } from "@/lib/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { quote as quoteShipping } from "@/lib/coordinadora";
+import { validateCoupon } from "@/lib/coupons/validate";
+import { couponRedemptions } from "@/lib/db/schema";
 import { z } from "zod";
 
 // Defaults de paquete cuando una variante no tiene dimensiones registradas
@@ -41,6 +43,8 @@ const inputSchema = z.object({
   contactPhone: z.string().min(7).max(50),
   /** Email de contacto. Requerido para compras como invitado. */
   contactEmail: z.string().email().max(255).optional(),
+  /** Código de cupón opcional. Se re-valida server-side. */
+  couponCode: z.string().min(1).max(50).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
 });
 
@@ -219,6 +223,28 @@ export async function createPendingOrderAction(
     { ...DEFAULT_PACKAGE_DIM_CM },
   );
 
+  // 3a. Validar cupón (si lo hay)
+  let discountTotal = 0;
+  let appliedCoupon: { id: string; code: string; freeShipping: boolean } | null =
+    null;
+  if (input.couponCode) {
+    const couponCheck = await validateCoupon(
+      input.couponCode,
+      { items: lineItems, subtotal },
+      user?.id ?? null,
+    );
+    if (!couponCheck.ok) {
+      return { ok: false, error: couponCheck.error };
+    }
+    discountTotal = couponCheck.coupon.discountAmount;
+    appliedCoupon = {
+      id: couponCheck.coupon.id,
+      code: couponCheck.coupon.code,
+      freeShipping: couponCheck.coupon.freeShipping,
+    };
+  }
+
+  // 3b. Calcular envío (Coordinadora si está configurada; tarifa plana fallback)
   const shippingQuote = await quoteShipping({
     originCity: process.env.COORDINADORA_ORIGIN_CITY ?? "Bogota",
     originDepartment:
@@ -234,9 +260,8 @@ export async function createPendingOrderAction(
     },
     subtotal,
   });
-  const shippingCost = shippingQuote.cost;
+  const shippingCost = appliedCoupon?.freeShipping ? 0 : shippingQuote.cost;
 
-  const discountTotal = 0; // Cupones: Fase 2
   const totalAmount = subtotal - discountTotal + shippingCost;
 
   // 4. Generar referencia única para Wompi
@@ -269,9 +294,20 @@ export async function createPendingOrderAction(
           shippingCountry: "Colombia",
           shippingCarrier: "Coordinadora",
           paymentReference,
+          couponCode: appliedCoupon?.code ?? null,
           notes: input.notes ?? null,
         })
         .returning({ id: orders.id });
+
+      // Registrar la redención del cupón (sirve para tope de usos)
+      if (appliedCoupon && discountTotal > 0) {
+        await tx.insert(couponRedemptions).values({
+          couponId: appliedCoupon.id,
+          profileId: user?.id ?? null,
+          orderId: order.id,
+          discountAmount: discountTotal.toFixed(2),
+        });
+      }
 
       await tx.insert(orderItems).values(
         lineItems.map((li) => ({
