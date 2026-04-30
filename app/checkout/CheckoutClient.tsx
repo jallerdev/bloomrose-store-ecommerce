@@ -30,6 +30,8 @@ interface AddressDTO {
 }
 
 interface Props {
+  /** True cuando no hay sesión (compra como invitado). */
+  isGuest: boolean;
   addresses: AddressDTO[];
   defaultContact: { fullName: string; phone: string; email: string };
 }
@@ -41,7 +43,7 @@ const fmt = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-export function CheckoutClient({ addresses, defaultContact }: Props) {
+export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -62,6 +64,7 @@ export function CheckoutClient({ addresses, defaultContact }: Props) {
     defaultContact.fullName,
   );
   const [contactPhone, setContactPhone] = useState(defaultContact.phone);
+  const [contactEmail, setContactEmail] = useState(defaultContact.email);
 
   const [newAddr, setNewAddr] = useState({
     addressLine1: "",
@@ -69,7 +72,8 @@ export function CheckoutClient({ addresses, defaultContact }: Props) {
     city: "",
     state: "",
     postalCode: "",
-    saveForLater: true,
+    // Solo aplica para usuarios autenticados; los guests no pueden guardar dirección.
+    saveForLater: !isGuest,
   });
   const [notes, setNotes] = useState("");
 
@@ -116,6 +120,11 @@ export function CheckoutClient({ addresses, defaultContact }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isGuest && !contactEmail.trim()) {
+      toast.error("Ingresa tu email para enviarte la confirmación");
+      return;
+    }
+
     startTransition(async () => {
       const result = await createPendingOrderAction({
         items: items.map((i) => ({ variantId: i.id, quantity: i.quantity })),
@@ -137,6 +146,7 @@ export function CheckoutClient({ addresses, defaultContact }: Props) {
             : undefined,
         contactFullName,
         contactPhone,
+        contactEmail: contactEmail.trim() || undefined,
         notes: notes || null,
       });
 
@@ -166,6 +176,25 @@ export function CheckoutClient({ addresses, defaultContact }: Props) {
         <section>
           <h2 className="mb-4 font-serif text-xl text-foreground">Contacto</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {isGuest && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs text-muted-foreground">
+                  Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  className={inputClass + " mt-1"}
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  required
+                  placeholder="tu@email.com"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Te enviaremos la confirmación y el seguimiento del pedido a
+                  este correo.
+                </p>
+              </div>
+            )}
             <div>
               <Label className="text-xs text-muted-foreground">
                 Nombre completo

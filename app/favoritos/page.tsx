@@ -34,6 +34,7 @@ export default async function FavoritesPage() {
     .filter((p) => p.variants.length > 0)
     .map((p) => {
       const v = p.variants[0];
+      const totalStock = p.variants.reduce((acc, x) => acc + x.stock, 0);
       return {
         id: p.id,
         slug: p.slug,
@@ -42,7 +43,7 @@ export default async function FavoritesPage() {
         price: Number(v.price),
         originalPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
         material: v.name ?? undefined,
-        stock: v.stock,
+        stock: totalStock,
         variantCount: p.variants.length,
         image: p.images[0]?.url ?? "",
       };

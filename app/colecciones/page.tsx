@@ -4,7 +4,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Colecciones — Bloom Rose Accesorios",
+  title: "Colecciones — Bloomrose Accesorios",
   description:
     "Explora nuestras colecciones curadas de accesorios artesanales para cada ocasion y estilo.",
 };

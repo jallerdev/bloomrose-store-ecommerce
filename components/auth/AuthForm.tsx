@@ -26,7 +26,7 @@ export function AuthForm() {
         setErrorMsg(res.error);
         toast.error(res.error);
       } else {
-        toast.success("¡Bienvenido/a a Bloom Rose!");
+        toast.success("¡Bienvenido/a a Bloomrose!");
       }
     });
   };
@@ -48,7 +48,7 @@ export function AuthForm() {
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-serif text-primary">Bloom Rose</h1>
+        <h1 className="text-3xl font-serif text-primary">Bloomrose</h1>
         <p className="text-sm text-muted-foreground">
           Únete a nuestra exclusiva colección
         </p>

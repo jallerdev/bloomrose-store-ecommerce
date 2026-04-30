@@ -34,10 +34,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
+  // /checkout NO es ruta protegida: guests pueden comprar sin cuenta.
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/admin") ||
-    request.nextUrl.pathname.startsWith("/perfil") ||
-    request.nextUrl.pathname.startsWith("/checkout");
+    request.nextUrl.pathname.startsWith("/perfil");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

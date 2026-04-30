@@ -69,7 +69,7 @@ export function StoreHeaderClient({
           <Link
             href="/"
             className="flex items-center gap-2.5"
-            aria-label="Bloom Rose Accesorios - Inicio"
+            aria-label="Bloomrose Accesorios - Inicio"
           >
             <Image
               src="/images/image.png"
@@ -79,7 +79,7 @@ export function StoreHeaderClient({
               className="rounded-full sm:h-10 sm:w-10"
             />
             <span className="hidden font-serif text-lg tracking-tight text-foreground sm:inline-block sm:text-xl">
-              Bloom Rose
+              Bloomrose
             </span>
           </Link>
         </div>

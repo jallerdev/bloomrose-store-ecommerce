@@ -1,15 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, profiles } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { StoreHeader } from "@/components/StoreHeader";
 import { Button } from "@/components/ui/button";
-import { Lock, ExternalLink, AlertTriangle } from "lucide-react";
+import { Lock, ExternalLink, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { buildCheckoutUrl } from "@/lib/wompi";
 
-export const metadata = { title: "Pago — Bloom Rose" };
+export const metadata = { title: "Pago · Bloomrose" };
 export const dynamic = "force-dynamic";
 
 interface Props {
@@ -26,47 +26,62 @@ const fmt = (n: number) =>
 export default async function PagoPage({ params }: Props) {
   const { orderId } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
-
   const [order] = await db
     .select()
     .from(orders)
     .where(eq(orders.id, orderId))
     .limit(1);
 
-  if (!order || order.profileId !== user.id) notFound();
+  if (!order) notFound();
 
-  // Si ya está pagado, ir a confirmación
-  if (order.status !== "PENDING") {
-    redirect(`/perfil/pedidos/${order.id}`);
+  // Autorización para acceder a esta página de pago:
+  //   - Usuario logueado y dueño del pedido → OK
+  //   - Pedido sin profileId (guest) → cualquiera con el link puede ver el resumen
+  //     y completar el pago (el orderId es UUID, suficientemente difícil de adivinar).
+  //   - Otros casos → 404
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwner = user && order.profileId === user.id;
+  const isGuestOrder = order.profileId === null;
+  if (!isOwner && !isGuestOrder) notFound();
+
+  // Email para Wompi: del perfil si está logueado, o del guestEmail si no.
+  let customerEmail: string | undefined;
+  if (user) {
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1);
+    customerEmail = profile?.email ?? user.email ?? undefined;
+  } else {
+    customerEmail = order.guestEmail ?? undefined;
   }
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
+  // Si ya está pagado, mostramos confirmación en lugar del botón de pago.
+  const alreadyPaid = order.status !== "PENDING" && order.status !== "CANCELLED";
 
   // Construir URL de Wompi. Si faltan credenciales, mostramos un fallback.
   let checkoutUrl: string | null = null;
   let configError: string | null = null;
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    checkoutUrl = buildCheckoutUrl({
-      reference: order.paymentReference!,
-      amountCop: Number(order.totalAmount),
-      redirectUrl: `${baseUrl}/perfil/pedidos/${order.id}`,
-      customerEmail: profile?.email ?? user.email ?? undefined,
-      customerFullName: order.shippingFullName ?? undefined,
-      customerPhone: order.shippingPhone ?? undefined,
-    });
-  } catch (err) {
-    configError = err instanceof Error ? err.message : "Error de configuración";
+  if (!alreadyPaid) {
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+      checkoutUrl = buildCheckoutUrl({
+        reference: order.paymentReference!,
+        amountCop: Number(order.totalAmount),
+        redirectUrl: `${baseUrl}/checkout/pago/${order.id}`,
+        customerEmail,
+        customerFullName: order.shippingFullName ?? undefined,
+        customerPhone: order.shippingPhone ?? undefined,
+      });
+    } catch (err) {
+      configError =
+        err instanceof Error ? err.message : "Error de configuración";
+    }
   }
 
   return (
@@ -74,7 +89,9 @@ export default async function PagoPage({ params }: Props) {
       <StoreHeader />
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="font-serif text-3xl text-foreground">Confirmación de pago</h1>
+          <h1 className="font-serif text-3xl text-foreground">
+            {alreadyPaid ? "¡Pedido confirmado!" : "Confirmación de pago"}
+          </h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Lock className="h-3.5 w-3.5" />
             Procesado de forma segura por Wompi
@@ -98,20 +115,31 @@ export default async function PagoPage({ params }: Props) {
               <span>{fmt(Number(order.shippingCost))}</span>
             </div>
             <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-medium">
-              <span>Total a pagar</span>
+              <span>{alreadyPaid ? "Total pagado" : "Total a pagar"}</span>
               <span>{fmt(Number(order.totalAmount))}</span>
             </div>
           </div>
 
           <div className="mt-8">
-            {configError ? (
+            {alreadyPaid ? (
+              <div className="flex flex-col items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-4 py-8 text-center">
+                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+                <p className="text-sm font-medium text-foreground">
+                  Recibimos tu pago. Te enviamos la confirmación por correo.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Ya estamos preparando tu pedido con cariño.
+                </p>
+              </div>
+            ) : configError ? (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-8 text-center">
                 <AlertTriangle className="h-6 w-6 text-amber-600" />
                 <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
                   La pasarela no está configurada todavía.
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Falta {configError}. Tu pedido está creado en estado PENDIENTE.
+                  Falta {configError}. Tu pedido está creado en estado
+                  PENDIENTE.
                 </p>
               </div>
             ) : (
@@ -126,19 +154,28 @@ export default async function PagoPage({ params }: Props) {
                   </a>
                 </Button>
                 <p className="mt-3 text-center text-xs text-muted-foreground">
-                  Aceptamos tarjetas, PSE, Nequi y Bancolombia. Volverás aquí al
-                  finalizar.
+                  Aceptamos tarjetas, PSE, Nequi y Bancolombia. Volverás aquí
+                  al finalizar.
                 </p>
               </>
             )}
 
             <div className="mt-4 text-center">
-              <Link
-                href="/perfil/pedidos"
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Pagar más tarde · Ver mis pedidos
-              </Link>
+              {user ? (
+                <Link
+                  href="/perfil/pedidos"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Ver mis pedidos
+                </Link>
+              ) : (
+                <Link
+                  href="/productos"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Seguir comprando
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -10,9 +10,17 @@ import { Tag } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Catálogo — Bloom Rose Accesorios",
+  title: "Catálogo de accesorios",
   description:
-    "Explora nuestra colección de accesorios artesanales: aretes, collares, pulseras y más.",
+    "Explora nuestra colección de bisutería artesanal: aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
+  alternates: { canonical: "/productos" },
+  openGraph: {
+    title: "Catálogo de accesorios · Bloomrose",
+    description:
+      "Bisutería artesanal hecha en Colombia. Aretes, collares, pulseras y anillos.",
+    url: "/productos",
+    type: "website",
+  },
 };
 
 export default async function ProductosPage(props: {
@@ -53,6 +61,10 @@ export default async function ProductosPage(props: {
     .map((product) => {
       const defaultVariant = product.variants[0];
       const defaultImage = product.images?.[0]?.url || "";
+      const totalStock = product.variants.reduce(
+        (acc: number, v: { stock: number }) => acc + v.stock,
+        0,
+      );
       return {
         id: product.id,
         name: product.title,
@@ -63,7 +75,7 @@ export default async function ProductosPage(props: {
           ? Number(defaultVariant.compareAtPrice)
           : undefined,
         material: defaultVariant.name ?? undefined,
-        stock: defaultVariant.stock as number,
+        stock: totalStock,
         variantCount: product.variants.length,
         image: defaultImage,
         rating: 5,

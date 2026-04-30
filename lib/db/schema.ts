@@ -115,9 +115,11 @@ export const productImages = pgTable("product_images", {
 
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
-  profileId: uuid("profile_id")
-    .references(() => profiles.id)
-    .notNull(),
+  // Nullable: si el pedido es de un guest (sin cuenta), profileId es null y
+  // usamos guestEmail + el snapshot de envío como fuente de contacto.
+  profileId: uuid("profile_id").references(() => profiles.id),
+  /** Email del comprador cuando se compra sin cuenta. Para usuarios autenticados es null. */
+  guestEmail: varchar("guest_email", { length: 255 }),
   // Referencia "viva" a la dirección (puede ser null si el usuario la borra).
   // El snapshot de la dirección se guarda más abajo para inmutabilidad.
   addressId: uuid("address_id").references(() => addresses.id),

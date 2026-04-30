@@ -28,11 +28,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
-  title: "Bloomrose · Bisutería y accesorios artesanales",
+  // Title del root layout aplica por defecto. Especificamos uno propio para que
+  // la home tenga un título descriptivo en SERPs.
+  title: {
+    absolute: "Bloomrose Accesorios · Bisutería artesanal hecha en Colombia",
+  },
   description:
     "Accesorios artesanales para resaltar tu esencia única. Aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
-  keywords: ["Bloomrose", "bisutería", "accesorios", "joyería artesanal"],
-  icons: { icon: "/images/image.png" },
+  alternates: { canonical: "/" },
 };
 
 export const dynamic = "force-dynamic";
@@ -129,6 +132,7 @@ export default async function HomePage() {
     .slice(0, 4)
     .map((p) => {
       const v = p.variants[0];
+      const totalStock = p.variants.reduce((acc, x) => acc + x.stock, 0);
       const hasDiscount =
         v.compareAtPrice && Number(v.compareAtPrice) > Number(v.price);
       const isNew =
@@ -147,7 +151,7 @@ export default async function HomePage() {
         price: Number(v.price),
         originalPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
         material: v.name ?? undefined,
-        stock: v.stock,
+        stock: totalStock,
         variantCount: p.variants.length,
         image: p.images[0]?.url ?? "",
         badge,

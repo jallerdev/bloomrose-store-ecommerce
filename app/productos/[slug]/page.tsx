@@ -23,15 +23,49 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<import("next").Metadata> {
   const { slug } = await params;
   const product = await db.query.products.findFirst({
     where: eq(productsSchema.slug, slug),
+    with: {
+      category: true,
+      images: {
+        orderBy: (images, { asc }) => [asc(images.displayOrder)],
+        limit: 1,
+      },
+    },
   });
-  if (!product) return { title: "Producto no encontrado · Bloomrose" };
+  if (!product) {
+    return {
+      title: "Producto no encontrado",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const description =
+    product.description.length > 160
+      ? product.description.slice(0, 157) + "…"
+      : product.description;
+  const path = `/productos/${product.slug}`;
+  const image = product.images?.[0]?.url;
+
   return {
-    title: `${product.title} · Bloomrose`,
-    description: product.description,
+    title: product.title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website",
+      url: path,
+      title: product.title,
+      description,
+      images: image ? [{ url: image, alt: product.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.title,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -81,8 +115,103 @@ export default async function ProductPage({
   const primaryImage = product.images[0]?.url || "/placeholder.svg";
   const galleryImages = product.images.length > 0 ? product.images : [];
 
+  // ── JSON-LD Product + BreadcrumbList ──────────────────────────
+  const SITE_URL =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://bloomroseaccesorios.com";
+  const productUrl = `${SITE_URL}/productos/${product.slug}`;
+  const totalStock = product.variants.reduce((acc, v) => acc + v.stock, 0);
+  const inStock = totalStock > 0;
+  const prices = product.variants.map((v) => Number(v.price));
+  const lowPrice = prices.length ? Math.min(...prices) : 0;
+  const highPrice = prices.length ? Math.max(...prices) : 0;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    image: galleryImages.map((img) =>
+      img.url.startsWith("http") ? img.url : `${SITE_URL}${img.url}`,
+    ),
+    sku: product.variants[0]?.sku,
+    brand: { "@type": "Brand", name: "Bloomrose" },
+    category: product.category?.name,
+    ...(reviewCount > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: avgRating.toFixed(1),
+        reviewCount,
+      },
+    }),
+    offers:
+      product.variants.length === 1
+        ? {
+            "@type": "Offer",
+            url: productUrl,
+            priceCurrency: "COP",
+            price: prices[0],
+            availability: inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+            itemCondition: "https://schema.org/NewCondition",
+          }
+        : {
+            "@type": "AggregateOffer",
+            url: productUrl,
+            priceCurrency: "COP",
+            lowPrice,
+            highPrice,
+            offerCount: product.variants.length,
+            availability: inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+          },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Productos",
+        item: `${SITE_URL}/productos`,
+      },
+      ...(product.category
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.category.name,
+              item: `${SITE_URL}/productos?category=${product.category.slug}`,
+            },
+          ]
+        : []),
+      {
+        "@type": "ListItem",
+        position: product.category ? 4 : 3,
+        name: product.title,
+        item: productUrl,
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([productJsonLd, breadcrumbJsonLd]),
+        }}
+      />
       <StoreHeader />
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -245,6 +374,10 @@ export default async function ProductPage({
               {related.map((p) => {
                 const v = p.variants[0];
                 if (!v) return null;
+                const totalStock = p.variants.reduce(
+                  (acc, x) => acc + x.stock,
+                  0,
+                );
                 return (
                   <ProductCard
                     key={p.id}
@@ -257,7 +390,7 @@ export default async function ProductPage({
                       v.compareAtPrice ? Number(v.compareAtPrice) : undefined
                     }
                     material={v.name ?? undefined}
-                    stock={v.stock}
+                    stock={totalStock}
                     variantCount={p.variants.length}
                     image={p.images[0]?.url ?? ""}
                     rating={5}

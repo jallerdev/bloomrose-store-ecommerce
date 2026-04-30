@@ -80,12 +80,21 @@ export async function sendOrderPaidEmail(args: { orderId: string }) {
     .limit(1);
   if (!order) throw new Error(`Order not found: ${args.orderId}`);
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, order.profileId))
-    .limit(1);
-  if (!profile?.email) throw new Error("Profile email missing");
+  // Resolver destinatario y nombre: del perfil si es de un usuario registrado,
+  // o del snapshot del pedido si es un guest checkout.
+  const [profile] = order.profileId
+    ? await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.id, order.profileId))
+        .limit(1)
+    : [];
+  const recipientEmail = profile?.email ?? order.guestEmail ?? null;
+  if (!recipientEmail) throw new Error("Order has no contact email");
+  const recipientName =
+    profile?.firstName ||
+    order.shippingFullName?.split(" ")[0] ||
+    "amiga";
 
   // Fetch items con producto + imagen
   const items = await db
@@ -116,10 +125,10 @@ export async function sendOrderPaidEmail(args: { orderId: string }) {
   );
 
   return send({
-    to: profile.email,
+    to: recipientEmail,
     subject: `Pedido confirmado · ${order.paymentReference}`,
     react: OrderPaidEmail({
-      customerName: profile.firstName || "amiga",
+      customerName: recipientName,
       paymentReference: order.paymentReference || order.id.slice(0, 8),
       items: items.map((it) => ({
         title: it.productTitle,
@@ -139,7 +148,11 @@ export async function sendOrderPaidEmail(args: { orderId: string }) {
         city: order.shippingCity || "",
         department: order.shippingDepartment || "",
       },
-      orderUrl: `${SITE}/perfil/pedidos/${order.id}`,
+      // Para guests apuntamos a la página de pago (pública por orderId);
+      // para usuarios autenticados, a la página de mis pedidos.
+      orderUrl: profile
+        ? `${SITE}/perfil/pedidos/${order.id}`
+        : `${SITE}/checkout/pago/${order.id}`,
     }),
   });
 }
@@ -157,18 +170,25 @@ export async function sendOrderShippedEmail(args: { orderId: string }) {
   if (!order) throw new Error(`Order not found: ${args.orderId}`);
   if (!order.trackingNumber) throw new Error("Order has no tracking number");
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, order.profileId))
-    .limit(1);
-  if (!profile?.email) throw new Error("Profile email missing");
+  const [profile] = order.profileId
+    ? await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.id, order.profileId))
+        .limit(1)
+    : [];
+  const recipientEmail = profile?.email ?? order.guestEmail ?? null;
+  if (!recipientEmail) throw new Error("Order has no contact email");
+  const recipientName =
+    profile?.firstName ||
+    order.shippingFullName?.split(" ")[0] ||
+    "amiga";
 
   return send({
-    to: profile.email,
+    to: recipientEmail,
     subject: `Tu pedido va en camino · ${order.paymentReference}`,
     react: OrderShippedEmail({
-      customerName: profile.firstName || "amiga",
+      customerName: recipientName,
       paymentReference: order.paymentReference || order.id.slice(0, 8),
       trackingNumber: order.trackingNumber,
       carrier: order.shippingCarrier,

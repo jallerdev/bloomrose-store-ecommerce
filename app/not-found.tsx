@@ -17,13 +17,13 @@ export default function NotFound() {
       {/* Logo */}
       <Link
         href="/"
-        aria-label="Bloom Rose — Inicio"
+        aria-label="Bloomrose — Inicio"
         className="mb-10 flex items-center gap-2.5"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
           <Flower2 className="h-5 w-5 text-primary-foreground" />
         </div>
-        <span className="font-serif text-xl text-foreground">Bloom Rose</span>
+        <span className="font-serif text-xl text-foreground">Bloomrose</span>
       </Link>
 
       {/* Big 404 */}

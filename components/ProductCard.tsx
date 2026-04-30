@@ -21,7 +21,8 @@ interface ProductCardProps {
   image: string;
   /** Material o nombre de variante destacada. Ej: "Oro 18k". */
   material?: string;
-  /** Stock disponible de la variante destacada. */
+  /** Stock total agregado de todas las variantes activas. "Agotado" se
+   * muestra solo cuando este valor es 0; "¡Solo quedan X!" cuando es ≤5. */
   stock?: number;
   /** # total de variantes del producto (para mostrar "+3 opciones"). */
   variantCount?: number;
@@ -95,30 +96,40 @@ export function ProductCard({
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Badges esquina superior izquierda (apilados) */}
-        <div className="absolute left-2.5 top-2.5 flex flex-col gap-1 sm:left-3 sm:top-3">
-          {hasDiscount && (
-            <Badge className="rounded-md border-none bg-destructive px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive-foreground sm:px-2.5 sm:text-xs">
-              -{discountPct}%
-            </Badge>
-          )}
-          {badge && (
-            <Badge
-              className={cn(
-                "rounded-md border-none px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider sm:px-2.5 sm:text-xs",
-                badgeVariant === "sale" && "bg-foreground text-background",
-                badgeVariant === "new" && "bg-primary text-primary-foreground",
-                badgeVariant === "bestseller" &&
-                  "bg-card text-foreground shadow-sm",
-              )}
-            >
-              {badge}
-            </Badge>
-          )}
-          {isOutOfStock && (
-            <Badge className="rounded-md border-none bg-foreground/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-background sm:px-2.5 sm:text-xs">
+        {/* Badges esquina superior izquierda. Reglas de prioridad para evitar
+            ruido visual:
+            - Si está agotado, ese es el único badge.
+            - Si hay descuento auto, suprimimos el badge manual "Oferta"
+              (sería redundante con el "-XX%").
+            `items-start` evita que los badges se estiren al ancho del más
+            ancho (que es el bug visual del texto descentrado). */}
+        <div className="pointer-events-none absolute left-2.5 top-2.5 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3">
+          {isOutOfStock ? (
+            <Badge className="justify-center rounded-md border-none bg-foreground/90 px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wider text-background sm:px-2.5 sm:text-xs">
               Agotado
             </Badge>
+          ) : (
+            <>
+              {hasDiscount && (
+                <Badge className="justify-center rounded-md border-none bg-destructive px-2 py-0.5 text-center text-[10px] font-bold uppercase tracking-wider text-destructive-foreground sm:px-2.5 sm:text-xs">
+                  -{discountPct}%
+                </Badge>
+              )}
+              {badge && !(hasDiscount && badgeVariant === "sale") && (
+                <Badge
+                  className={cn(
+                    "justify-center rounded-md border-none px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wider sm:px-2.5 sm:text-xs",
+                    badgeVariant === "sale" && "bg-foreground text-background",
+                    badgeVariant === "new" &&
+                      "bg-primary text-primary-foreground",
+                    badgeVariant === "bestseller" &&
+                      "bg-card text-foreground shadow-sm",
+                  )}
+                >
+                  {badge}
+                </Badge>
+              )}
+            </>
           )}
         </div>
 
@@ -129,17 +140,7 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Pill envío gratis */}
-        {hasFreeShipping && !isOutOfStock && (
-          <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3">
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/95 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm sm:text-xs">
-              <Truck className="h-3 w-3" />
-              Envío gratis
-            </span>
-          </div>
-        )}
-
-        {/* Overlay hover "Ver detalles" */}
+        {/* Overlay hover "Ver detalles" — ocupa el bottom completo */}
         {!isOutOfStock && (
           <div
             className={cn(
@@ -147,7 +148,6 @@ export function ProductCard({
               isHovered
                 ? "translate-y-0 opacity-100"
                 : "translate-y-2 opacity-0",
-              hasFreeShipping && "pb-10 sm:pb-12",
             )}
           >
             <div className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-foreground py-2.5 text-xs font-medium tracking-wide text-background sm:text-sm">
@@ -212,8 +212,10 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Línea de meta: stock + variantes */}
-        {(isLowStock || (variantCount && variantCount > 1)) && (
+        {/* Línea de meta: stock + variantes + envío gratis */}
+        {(isLowStock ||
+          (variantCount && variantCount > 1) ||
+          (hasFreeShipping && !isOutOfStock)) && (
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-xs">
             {isLowStock && (
               <span className="font-medium text-amber-600">
@@ -224,6 +226,12 @@ export function ProductCard({
               <span className="text-muted-foreground">
                 +{variantCount - 1}{" "}
                 {variantCount - 1 === 1 ? "opción" : "opciones"}
+              </span>
+            )}
+            {hasFreeShipping && !isOutOfStock && (
+              <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
+                <Truck className="h-3 w-3" />
+                Envío gratis
               </span>
             )}
           </div>

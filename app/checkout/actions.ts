@@ -39,6 +39,8 @@ const inputSchema = z.object({
   newAddress: newAddressSchema.optional(),
   contactFullName: z.string().min(2).max(255),
   contactPhone: z.string().min(7).max(50),
+  /** Email de contacto. Requerido para compras como invitado. */
+  contactEmail: z.string().email().max(255).optional(),
   notes: z.string().max(1000).optional().nullable(),
 });
 
@@ -68,7 +70,23 @@ export async function createPendingOrderAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Debes iniciar sesión." };
+
+  // Soporte de guest checkout: si no hay sesión, exigimos email para enviar
+  // confirmación y permitir buscar el pedido luego.
+  const isGuest = !user;
+  if (isGuest && !input.contactEmail) {
+    return {
+      ok: false,
+      error: "Necesitamos tu email para enviarte la confirmación.",
+    };
+  }
+  // Los guests no pueden usar direcciones guardadas ni guardarlas.
+  if (isGuest && input.addressMode === "existing") {
+    return {
+      ok: false,
+      error: "Para usar direcciones guardadas debes iniciar sesión.",
+    };
+  }
 
   // 1. Resolver dirección de envío (snapshot)
   let shipping: {
@@ -91,7 +109,7 @@ export async function createPendingOrderAction(
       .from(addresses)
       .where(eq(addresses.id, input.existingAddressId))
       .limit(1);
-    if (!addr || addr.profileId !== user.id) {
+    if (!addr || !user || addr.profileId !== user.id) {
       return { ok: false, error: "Dirección no válida." };
     }
     shipping = {
@@ -110,7 +128,8 @@ export async function createPendingOrderAction(
     }
     const a = input.newAddress;
     let savedId: string | null = null;
-    if (a.saveForLater) {
+    // Solo guardamos la dirección al perfil cuando hay sesión.
+    if (a.saveForLater && user) {
       const [inserted] = await db
         .insert(addresses)
         .values({
@@ -232,7 +251,8 @@ export async function createPendingOrderAction(
       const [order] = await tx
         .insert(orders)
         .values({
-          profileId: user.id,
+          profileId: user?.id ?? null,
+          guestEmail: isGuest ? input.contactEmail ?? null : null,
           addressId: shipping.addressId,
           status: "PENDING",
           subtotal: subtotal.toFixed(2),
