@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { FloatingContact } from "@/components/FloatingContact";
 import "./globals.css";
 
 const _dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-inter" });
@@ -120,11 +121,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
+  const chatEnabled = Boolean(process.env.ANTHROPIC_API_KEY);
+
   return (
     <html lang="es-CO">
       <body className="font-sans antialiased">
         {children}
         <Toaster />
+        <FloatingContact
+          whatsappNumber={whatsappNumber}
+          chatEnabled={chatEnabled}
+        />
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
