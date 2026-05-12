@@ -24,9 +24,9 @@ import {
   desc,
   eq,
   gte,
+  inArray,
   lt,
   lte,
-  ne,
   sql,
   sum,
 } from "drizzle-orm";
@@ -57,11 +57,16 @@ export default async function AdminDashboardPage() {
   start60.setDate(start60.getDate() - 59);
   start60.setHours(0, 0, 0, 0);
 
-  // Filtro de "ventas reales" (pagadas y posteriores), excluyendo pendientes y canceladas
-  const realSale = and(
-    ne(orders.status, "CANCELLED"),
-    ne(orders.status, "PENDING"),
-  );
+  // Filtro de "ventas reales" — lista positiva en vez de doble `<>` para que
+  // Postgres pueda usar el índice (status, created_at). El predicado `<>`
+  // no es selectivo y forzaba seq scan, llegando al statement_timeout del
+  // pooler de Supabase.
+  const realSale = inArray(orders.status, [
+    "PAID",
+    "PROCESSING",
+    "SHIPPED",
+    "DELIVERED",
+  ]);
 
   // KPIs — Promise.allSettled para que el dashboard no se rompa entero si una
   // query individual hace timeout en el pooler de Supabase. Cada KPI tiene un

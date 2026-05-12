@@ -20,6 +20,7 @@ import {
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
+import { NewsletterForm } from "@/components/NewsletterForm";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -145,21 +146,15 @@ export default async function HomePage() {
       };
     });
 
-  const categoryImageFallback: Record<string, string> = {
-    aretes: "/products/earrings.jpg",
-    collares: "/products/necklace.jpg",
-    pulseras: "/products/bracelet.jpg",
-    anillos: "/products/ring.jpg",
-  };
-
   const homeCategories = categoryRows
     .filter((c) => Number(c.productCount) > 0)
     .slice(0, 4)
     .map((c) => ({
       name: c.name,
       slug: c.slug,
-      image:
-        c.imageUrl || categoryImageFallback[c.slug] || "/placeholder.svg",
+      // imageUrl viene de la DB (Supabase Storage). Si la categoría aún no
+      // tiene imagen subida, dejamos null y el card renderiza un placeholder.
+      image: c.imageUrl ?? null,
       count: Number(c.productCount),
     }));
 
@@ -327,16 +322,24 @@ export default async function HomePage() {
               {homeCategories.map((cat) => (
                 <Link
                   key={cat.slug}
-                  href="/productos"
+                  href={`/productos?category=${encodeURIComponent(cat.slug)}`}
                   className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary"
                 >
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  />
+                  {cat.image ? (
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/40">
+                      <span className="font-brand text-4xl text-primary/40 sm:text-5xl">
+                        {cat.name}
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/10 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 sm:p-5">
                     <div>
@@ -529,25 +532,7 @@ export default async function HomePage() {
                 Lanzamientos, drops privados y promociones que solo enviamos a
                 nuestra lista. Cero spam, lo prometemos.
               </p>
-              <form className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
-                <input
-                  type="email"
-                  required
-                  placeholder="tu@email.com"
-                  className="h-12 flex-1 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="h-12 rounded-xl bg-foreground px-8 text-sm font-medium text-background hover:bg-foreground/90"
-                >
-                  Suscribirme
-                </Button>
-              </form>
-              <p className="mt-3 text-[10px] text-muted-foreground">
-                Al suscribirte aceptas recibir correos ocasionales. Te puedes
-                dar de baja cuando quieras.
-              </p>
+              <NewsletterForm source="home" />
             </div>
           </div>
         </div>

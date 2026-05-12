@@ -12,27 +12,19 @@ export const metadata = {
   alternates: { canonical: "/colecciones" },
 };
 
-// Fallback de imágenes cuando una categoría aún no tiene imageUrl en la DB.
-// Lo mantenemos sincronizado con el home (app/page.tsx).
-const CATEGORY_IMAGE_FALLBACK: Record<string, string> = {
-  aretes: "/products/earrings.jpg",
-  collares: "/products/necklace.jpg",
-  pulseras: "/products/bracelet.jpg",
-  anillos: "/products/ring.jpg",
-};
-
 export default async function ColeccionesPage() {
   const rows = await getHomeCategories();
 
   // Solo mostramos colecciones con al menos un producto activo.
+  // image viene de Supabase Storage vía `categories.imageUrl`. Si la
+  // categoría aún no tiene imagen subida, el card renderiza un placeholder.
   const collections = rows
     .filter((c) => Number(c.productCount) > 0)
     .map((c) => ({
       slug: c.slug,
       name: c.name,
       description: c.description,
-      image:
-        c.imageUrl || CATEGORY_IMAGE_FALLBACK[c.slug] || "/placeholder.svg",
+      image: c.imageUrl ?? null,
       count: Number(c.productCount),
     }));
 
@@ -78,13 +70,21 @@ export default async function ColeccionesPage() {
                 >
                   {/* Image */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
-                    <Image
-                      src={collection.image}
-                      alt={collection.name}
-                      fill
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
+                    {collection.image ? (
+                      <Image
+                        src={collection.image}
+                        alt={collection.name}
+                        fill
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/40">
+                        <span className="font-brand text-4xl text-primary/40 sm:text-5xl">
+                          {collection.name}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Info */}

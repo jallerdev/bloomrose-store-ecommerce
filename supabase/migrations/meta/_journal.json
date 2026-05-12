@@ -57,6 +57,13 @@
       "when": 1778617853863,
       "tag": "0007_dashboard_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778622203618,
+      "tag": "0008_newsletter_subscriptions",
+      "breakpoints": true
     }
   ]
 }

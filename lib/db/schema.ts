@@ -219,6 +219,16 @@ export const stockNotifications = pgTable("stock_notifications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Suscripciones al newsletter (form del home "Comunidad Bloom Rose").
+// `unsubscribedAt` permite soft-delete cuando alguien se da de baja.
+export const newsletterSubscriptions = pgTable("newsletter_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  source: varchar("source", { length: 50 }).default("home").notNull(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const orderItems = pgTable("order_items", {
   id: uuid("id").defaultRandom().primaryKey(),
   orderId: uuid("order_id")

@@ -14,6 +14,7 @@ import { OrderPaidEmail } from "./templates/OrderPaid";
 import { OrderShippedEmail } from "./templates/OrderShipped";
 import { WelcomeEmail } from "./templates/Welcome";
 import { BackInStockEmail } from "./templates/BackInStock";
+import { NewsletterWelcomeEmail } from "./templates/NewsletterWelcome";
 
 let resendClient: Resend | null = null;
 function getResend(): Resend | null {
@@ -74,6 +75,18 @@ export async function sendWelcomeEmail(args: {
       customerName: args.firstName || "amiga",
       shopUrl: `${SITE}/productos`,
     }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Confirmación de suscripción al newsletter
+// ─────────────────────────────────────────────────────────────────
+
+export async function sendNewsletterWelcomeEmail(args: { email: string }) {
+  return send({
+    to: args.email,
+    subject: "Te uniste a la lista de Bloom Rose",
+    react: NewsletterWelcomeEmail({ shopUrl: `${SITE}/productos` }),
   });
 }
 
