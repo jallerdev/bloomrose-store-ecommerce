@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,7 +10,6 @@ import {
   Users,
   Tag,
   Ticket,
-  Flower2,
   Menu,
   ChevronsLeft,
   ChevronsRight,
@@ -92,8 +92,14 @@ function SidebarBody({
           )}
           aria-label="Bloom Rose Admin"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-sm">
-            <Flower2 className="h-4 w-4 text-primary-foreground" />
+          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full shadow-sm">
+            <Image
+              src="/images/image.webp"
+              alt="Bloom Rose Admin"
+              fill
+              sizes="36px"
+              className="object-cover"
+            />
           </div>
           {!collapsed && (
             <div>
