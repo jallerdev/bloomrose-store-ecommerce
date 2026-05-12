@@ -1,60 +1,41 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight, Tag } from "lucide-react";
+
 import { StoreHeader } from "@/components/StoreHeader";
-import { ArrowRight } from "lucide-react";
+import { getHomeCategories } from "@/lib/db/cached";
 
 export const metadata = {
   title: "Colecciones — Bloomrose Accesorios",
   description:
-    "Explora nuestras colecciones curadas de accesorios artesanales para cada ocasion y estilo.",
+    "Explora nuestras colecciones curadas de accesorios artesanales para cada ocasión y estilo.",
+  alternates: { canonical: "/colecciones" },
 };
 
-const collections = [
-  {
-    name: "Primavera Dorada",
-    description:
-      "Tonos calidos y piezas luminosas inspiradas en los atardeceres de primavera. Oro, perlas y detalles florales.",
-    image: "/products/earrings.jpg",
-    count: 12,
-  },
-  {
-    name: "Brisa del Mar",
-    description:
-      "Accesorios frescos y ligeros para los dias de playa. Conchas, turquesas y tejidos naturales.",
-    image: "/products/bracelet.jpg",
-    count: 8,
-  },
-  {
-    name: "Noche Estelar",
-    description:
-      "Piezas sofisticadas con cristales y acabados oscuros. Perfectas para eventos especiales y cenas elegantes.",
-    image: "/products/earrings-2.jpg",
-    count: 10,
-  },
-  {
-    name: "Espiritu Boho",
-    description:
-      "Accesorios con alma libre. Cuero trenzado, piedras naturales y disenos organicos llenos de personalidad.",
-    image: "/products/scrunchie.jpg",
-    count: 14,
-  },
-  {
-    name: "Clasicos Eternos",
-    description:
-      "Las piezas que nunca pasan de moda. Aros, cadenas delicadas y anillos minimalistas en oro y plata.",
-    image: "/products/ring.jpg",
-    count: 16,
-  },
-  {
-    name: "Rosa Salvaje",
-    description:
-      "Nuestra coleccion insignia. Disenos audaces con la delicadeza que nos define. Piezas unicas y llamativas.",
-    image: "/products/necklace.jpg",
-    count: 9,
-  },
-];
+// Fallback de imágenes cuando una categoría aún no tiene imageUrl en la DB.
+// Lo mantenemos sincronizado con el home (app/page.tsx).
+const CATEGORY_IMAGE_FALLBACK: Record<string, string> = {
+  aretes: "/products/earrings.jpg",
+  collares: "/products/necklace.jpg",
+  pulseras: "/products/bracelet.jpg",
+  anillos: "/products/ring.jpg",
+};
 
-export default function ColeccionesPage() {
+export default async function ColeccionesPage() {
+  const rows = await getHomeCategories();
+
+  // Solo mostramos colecciones con al menos un producto activo.
+  const collections = rows
+    .filter((c) => Number(c.productCount) > 0)
+    .map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      description: c.description,
+      image:
+        c.imageUrl || CATEGORY_IMAGE_FALLBACK[c.slug] || "/placeholder.svg",
+      count: Number(c.productCount),
+    }));
+
   return (
     <main className="min-h-screen bg-background">
       <StoreHeader />
@@ -63,11 +44,14 @@ export default function ColeccionesPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
-            Nuestras <span className="text-primary">Colecciones</span>
+            Nuestras{" "}
+            <span className="font-brand text-4xl text-primary sm:text-5xl lg:text-6xl">
+              Colecciones
+            </span>
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
-            Cada coleccion cuenta una historia diferente. Encuentra la que
-            resuene con tu estilo y personalidad.
+            Cada categoría reúne piezas seleccionadas a mano. Encuentra la que
+            resuene con tu estilo.
           </p>
         </div>
       </section>
@@ -75,45 +59,59 @@ export default function ColeccionesPage() {
       {/* Collections Grid */}
       <section>
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {collections.map((collection) => (
-              <Link
-                key={collection.name}
-                href="/productos"
-                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-md"
-              >
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
-                  <Image
-                    src={collection.image}
-                    alt={collection.name}
-                    fill
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
+          {collections.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-card py-16 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Tag className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Aún no hay colecciones con productos disponibles.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {collections.map((collection) => (
+                <Link
+                  key={collection.slug}
+                  href={`/productos?category=${encodeURIComponent(collection.slug)}`}
+                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-md"
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
+                    <Image
+                      src={collection.image}
+                      alt={collection.name}
+                      fill
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
 
-                {/* Info */}
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-serif text-lg text-foreground">
-                      {collection.name}
-                    </h2>
-                    <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
-                      {collection.count} piezas
-                    </span>
+                  {/* Info */}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="font-serif text-lg text-foreground">
+                        {collection.name}
+                      </h2>
+                      <span className="shrink-0 rounded-md bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
+                        {collection.count}{" "}
+                        {collection.count === 1 ? "pieza" : "piezas"}
+                      </span>
+                    </div>
+                    {collection.description && (
+                      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                        {collection.description}
+                      </p>
+                    )}
+                    <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-primary transition-colors group-hover:text-foreground">
+                      Explorar colección
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </div>
                   </div>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                    {collection.description}
-                  </p>
-                  <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-primary transition-colors group-hover:text-foreground">
-                    Explorar coleccion
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>

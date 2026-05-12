@@ -40,18 +40,25 @@ export const getHomeCategories = unstable_cache(
         id: categoriesSchema.id,
         name: categoriesSchema.name,
         slug: categoriesSchema.slug,
+        description: categoriesSchema.description,
         imageUrl: categoriesSchema.imageUrl,
+        // count() ignora nulls del LEFT JOIN, así que la condición de isActive
+        // se aplica vía AND para que solo productos activos cuenten.
         productCount: count(productsSchema.id),
       })
       .from(categoriesSchema)
       .leftJoin(
         productsSchema,
-        eq(productsSchema.categoryId, categoriesSchema.id),
+        and(
+          eq(productsSchema.categoryId, categoriesSchema.id),
+          eq(productsSchema.isActive, true),
+        ),
       )
       .groupBy(
         categoriesSchema.id,
         categoriesSchema.name,
         categoriesSchema.slug,
+        categoriesSchema.description,
         categoriesSchema.imageUrl,
       )
       .orderBy(desc(count(productsSchema.id)));

@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display, Sacramento } from "next/font/google";
 import { DeferredWidgets } from "@/components/DeferredWidgets";
+import { ConditionalFooter } from "@/components/ConditionalFooter";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -132,6 +133,7 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         {children}
+        <ConditionalFooter />
         <DeferredWidgets
           whatsappNumber={whatsappNumber}
           chatEnabled={chatEnabled}
