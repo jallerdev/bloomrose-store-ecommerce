@@ -1,18 +1,11 @@
 import { Suspense } from "react";
 import { Tag } from "lucide-react";
-import { eq } from "drizzle-orm";
 
-import { db } from "@/lib/db";
-import {
-  products as productsSchema,
-  productVariants,
-} from "@/lib/db/schema";
+import { getCatalogProducts } from "@/lib/db/cached";
 
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters, type FilterFacets } from "@/components/ProductFilters";
-
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Catálogo de accesorios",
@@ -57,22 +50,11 @@ export default async function ProductosPage(props: {
       ? parseFloat(params.maxPrice)
       : undefined;
 
-  // Catálogo activo + relaciones para construir facets dinámicas
+  // Catálogo activo + relaciones para construir facets dinámicas (cacheado)
   let allActiveProducts: ProductRow[] = [];
   let dbError: unknown = null;
   try {
-    const rows = await db.query.products.findMany({
-      where: eq(productsSchema.isActive, true),
-      with: {
-        category: true,
-        variants: { where: eq(productVariants.isActive, true) },
-        images: {
-          orderBy: (images, { asc }) => [asc(images.displayOrder)],
-          limit: 1,
-        },
-      },
-      orderBy: (products, { desc }) => [desc(products.createdAt)],
-    });
+    const rows = await getCatalogProducts();
     allActiveProducts = rows.map((p) => ({
       id: p.id,
       title: p.title,

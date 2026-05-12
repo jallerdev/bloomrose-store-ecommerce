@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { categories } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function createCategory(formData: FormData) {
   const name = formData.get("name") as string;
@@ -17,9 +17,11 @@ export async function createCategory(formData: FormData) {
   });
 
   revalidatePath("/admin/categories");
+  revalidateTag("categories");
 }
 
 export async function deleteCategory(id: string) {
   await db.delete(categories).where(eq(categories.id, id));
   revalidatePath("/admin/categories");
+  revalidateTag("categories");
 }

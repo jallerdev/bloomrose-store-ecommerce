@@ -8,7 +8,7 @@ import {
   profiles,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,6 +18,8 @@ export async function deleteProductAction(productId: string) {
   try {
     await db.delete(products).where(eq(products.id, productId));
     revalidatePath("/admin/productos");
+    revalidateTag("products");
+    revalidateTag("categories");
     return { success: true };
   } catch (err) {
     console.error("deleteProductAction error:", err);
@@ -66,6 +68,8 @@ export async function createProductAction(data: {
 
     revalidatePath("/admin/productos");
     revalidatePath("/productos");
+    revalidateTag("products");
+    revalidateTag("categories");
   } catch (err: any) {
     console.error("createProductAction error:", err);
     return { error: err?.message || "Error al crear el producto." };
@@ -95,6 +99,13 @@ export async function updateProductAction(
   },
 ) {
   try {
+    // Snapshot del stock previo para detectar transiciones 0 → >0
+    const previousVariants = await db
+      .select({ stock: productVariants.stock })
+      .from(productVariants)
+      .where(eq(productVariants.productId, productId));
+    const stockBefore = previousVariants.reduce((s, v) => s + v.stock, 0);
+
     await db
       .update(products)
       .set({
@@ -123,6 +134,17 @@ export async function updateProductAction(
       );
     }
 
+    const stockAfter = data.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
+    if (stockBefore === 0 && stockAfter > 0 && data.isActive) {
+      // No bloqueamos el flujo del admin si el envío de emails falla.
+      try {
+        const { notifyBackInStock } = await import("@/lib/email");
+        await notifyBackInStock(productId);
+      } catch (err) {
+        console.error("notifyBackInStock failed:", err);
+      }
+    }
+
     // Replace images
     await db
       .delete(productImages)
@@ -140,6 +162,9 @@ export async function updateProductAction(
     revalidatePath("/admin/productos");
     revalidatePath("/productos");
     revalidatePath(`/productos/${data.slug}`);
+    revalidateTag("products");
+    revalidateTag(`product:${data.slug}`);
+    revalidateTag(`product:${productId}`);
   } catch (err: any) {
     console.error("updateProductAction error:", err);
     return { error: err?.message || "Error al actualizar el producto." };

@@ -13,14 +13,10 @@ import {
   Instagram,
   Quote,
 } from "lucide-react";
-import { count, desc, eq } from "drizzle-orm";
-
-import { db } from "@/lib/db";
 import {
-  categories as categoriesSchema,
-  products as productsSchema,
-  productVariants,
-} from "@/lib/db/schema";
+  getFeaturedProducts,
+  getHomeCategories,
+} from "@/lib/db/cached";
 
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
@@ -37,8 +33,6 @@ export const metadata = {
     "Accesorios artesanales para resaltar tu esencia única. Aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
   alternates: { canonical: "/" },
 };
-
-export const dynamic = "force-dynamic";
 
 const valueProps = [
   {
@@ -111,20 +105,11 @@ const testimonials = [
 const NEW_BADGE_DAYS = 30;
 
 export default async function HomePage() {
-  // Productos destacados: 4 más recientes activos con al menos una variante activa.
-  const recentProducts = await db.query.products.findMany({
-    where: eq(productsSchema.isActive, true),
-    with: {
-      category: true,
-      variants: { where: eq(productVariants.isActive, true) },
-      images: {
-        orderBy: (images, { asc }) => [asc(images.displayOrder)],
-        limit: 1,
-      },
-    },
-    orderBy: [desc(productsSchema.createdAt)],
-    limit: 8,
-  });
+  // Productos destacados y categorías se piden en paralelo, ambos cacheados.
+  const [recentProducts, categoryRows] = await Promise.all([
+    getFeaturedProducts(),
+    getHomeCategories(),
+  ]);
 
   const now = Date.now();
   const featuredProducts = recentProducts
@@ -157,28 +142,6 @@ export default async function HomePage() {
         badge,
       };
     });
-
-  // Categorías reales con conteo de productos activos.
-  const categoryRows = await db
-    .select({
-      id: categoriesSchema.id,
-      name: categoriesSchema.name,
-      slug: categoriesSchema.slug,
-      imageUrl: categoriesSchema.imageUrl,
-      productCount: count(productsSchema.id),
-    })
-    .from(categoriesSchema)
-    .leftJoin(
-      productsSchema,
-      eq(productsSchema.categoryId, categoriesSchema.id),
-    )
-    .groupBy(
-      categoriesSchema.id,
-      categoriesSchema.name,
-      categoriesSchema.slug,
-      categoriesSchema.imageUrl,
-    )
-    .orderBy(desc(count(productsSchema.id)));
 
   const categoryImageFallback: Record<string, string> = {
     aretes: "/products/earrings.jpg",

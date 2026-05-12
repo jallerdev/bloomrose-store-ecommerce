@@ -2,14 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChevronRight, Star } from "lucide-react";
-import { eq, and, ne, avg, count } from "drizzle-orm";
 
-import { db } from "@/lib/db";
 import {
-  products as productsSchema,
-  productVariants,
-  reviews,
-} from "@/lib/db/schema";
+  getProductBySlug,
+  getProductReviewStats,
+  getRelatedProducts,
+} from "@/lib/db/cached";
 
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductDetailClient } from "@/components/ProductDetailClient";
@@ -17,24 +15,13 @@ import { ProductDetailsTabs } from "@/components/ProductDetailsTabs";
 import { ProductReviews } from "@/components/ProductReviews";
 import { ProductCard } from "@/components/ProductCard";
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<import("next").Metadata> {
   const { slug } = await params;
-  const product = await db.query.products.findFirst({
-    where: eq(productsSchema.slug, slug),
-    with: {
-      category: true,
-      images: {
-        orderBy: (images, { asc }) => [asc(images.displayOrder)],
-        limit: 1,
-      },
-    },
-  });
+  const product = await getProductBySlug(slug);
   if (!product) {
     return {
       title: "Producto no encontrado",
@@ -75,42 +62,17 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await db.query.products.findFirst({
-    where: eq(productsSchema.slug, slug),
-    with: {
-      category: true,
-      variants: { where: eq(productVariants.isActive, true) },
-      images: { orderBy: (images, { asc }) => [asc(images.displayOrder)] },
-    },
-  });
+  const product = await getProductBySlug(slug);
 
   if (!product) notFound();
 
-  // Estadística de reseñas (avg + count) — sin traer toda la lista aquí
-  const [stats] = await db
-    .select({
-      avgRating: avg(reviews.rating),
-      total: count(reviews.id),
-    })
-    .from(reviews)
-    .where(eq(reviews.productId, product.id));
+  const [stats, related] = await Promise.all([
+    getProductReviewStats(product.id),
+    getRelatedProducts(product.id, product.categoryId),
+  ]);
 
   const avgRating = stats?.avgRating ? Number(stats.avgRating) : 0;
   const reviewCount = stats?.total ? Number(stats.total) : 0;
-
-  // Productos relacionados de la misma categoría (excluyendo el actual)
-  const related = await db.query.products.findMany({
-    where: and(
-      eq(productsSchema.categoryId, product.categoryId),
-      ne(productsSchema.id, product.id),
-      eq(productsSchema.isActive, true),
-    ),
-    with: {
-      variants: { where: eq(productVariants.isActive, true) },
-      images: { orderBy: (images, { asc }) => [asc(images.displayOrder)] },
-    },
-    limit: 4,
-  });
 
   const primaryImage = product.images[0]?.url || "/placeholder.svg";
   const galleryImages = product.images.length > 0 ? product.images : [];
