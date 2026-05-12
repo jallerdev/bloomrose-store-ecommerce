@@ -620,7 +620,15 @@ export default async function HomePage() {
               reservados.
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Hecho con cariño en Colombia
+              Hecho con cariño en Colombia ·{" "}
+              <a
+                href="https://jaller-portfolio.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
+              >
+                Jaller.Dev
+              </a>
             </p>
           </div>
         </div>
