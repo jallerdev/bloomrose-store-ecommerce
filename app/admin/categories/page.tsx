@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import { createCategory } from "./actions";
 import { CategoryDeleteButton } from "./CategoryDeleteButton";
+import { CategoryImageUpload } from "./CategoryImageUpload";
 
 export const metadata = { title: "Categorías — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
@@ -96,6 +97,17 @@ export default async function AdminCategoriesPage() {
                 placeholder="Opcional. Aparece en la página de categoría."
                 className="mt-1 border-border bg-background text-sm"
               />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">
+                Imagen de portada
+              </Label>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">
+                Aparece en /colecciones y en el bloque de categorías del home.
+              </p>
+              <div className="mt-2">
+                <CategoryImageUpload />
+              </div>
             </div>
             <Button
               type="submit"
