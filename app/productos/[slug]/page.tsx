@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ChevronRight, Star } from "lucide-react";
 
@@ -14,6 +13,7 @@ import { ProductDetailClient } from "@/components/ProductDetailClient";
 import { ProductDetailsTabs } from "@/components/ProductDetailsTabs";
 import { ProductReviews } from "@/components/ProductReviews";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 
 export async function generateMetadata({
   params,
@@ -204,36 +204,16 @@ export default async function ProductPage({
 
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:gap-16">
           {/* Galería */}
-          <div className="flex flex-col gap-4">
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-secondary shadow-sm">
-              <Image
-                src={primaryImage}
-                alt={product.title}
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-            {galleryImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {galleryImages.map((img, i) => (
-                  <div
-                    key={img.id}
-                    className="relative h-20 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border border-border bg-secondary transition-colors hover:border-foreground"
-                    aria-label={`Vista ${i + 1}`}
-                  >
-                    <Image
-                      src={img.url}
-                      alt={`${product.title} — vista ${i + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductImageGallery
+            images={
+              galleryImages.length > 0
+                ? galleryImages.map((img, i) => ({
+                    src: img.url,
+                    alt: `${product.title} — vista ${i + 1}`,
+                  }))
+                : [{ src: primaryImage, alt: product.title }]
+            }
+          />
 
           {/* Detalles + selector */}
           <div className="flex flex-col gap-5">

@@ -142,9 +142,12 @@ export default async function ProductosPage(props: {
       const minVariantPrice = Math.min(
         ...product.variants.map((v) => Number(v.price)),
       );
-      const hasDiscount = product.variants.some(
-        (v) =>
-          v.compareAtPrice && Number(v.compareAtPrice) > Number(v.price),
+      // hasDiscount mira solo la variante por defecto, igual que el card.
+      // Si miráramos `variants.some(...)` un producto sin oferta visible pasaría
+      // el filtro "Solo en oferta" cuando otra variante oculta sí tiene descuento.
+      const hasDiscount = Boolean(
+        defaultVariant.compareAtPrice &&
+          Number(defaultVariant.compareAtPrice) > Number(defaultVariant.price),
       );
       const createdAtMs = new Date(product.createdAt).getTime();
       return {
@@ -177,18 +180,20 @@ export default async function ProductosPage(props: {
     .filter((p) => {
       if (categorySlug && p.categorySlug !== categorySlug) return false;
       if (material && !p.materials.includes(material)) return false;
+      // Filtros de precio comparados contra el precio visible (default variant),
+      // así lo que entra/sale del filtro coincide con lo que se ve en el card.
       if (
         minPriceParam !== undefined &&
         !isNaN(minPriceParam) &&
         minPriceParam > facets.priceRange.min &&
-        p.minVariantPrice < minPriceParam
+        p.price < minPriceParam
       )
         return false;
       if (
         maxPriceParam !== undefined &&
         !isNaN(maxPriceParam) &&
         maxPriceParam < facets.priceRange.max &&
-        p.minVariantPrice > maxPriceParam
+        p.price > maxPriceParam
       )
         return false;
       if (onSale && !p.hasDiscount) return false;

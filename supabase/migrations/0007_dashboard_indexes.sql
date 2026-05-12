@@ -1,0 +1,3 @@
+CREATE INDEX IF NOT EXISTS "orders_status_created_at_idx" ON "orders" USING btree ("status","created_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "orders_created_at_idx" ON "orders" USING btree ("created_at" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "product_variants_active_low_stock_idx" ON "product_variants" USING btree ("stock") WHERE "product_variants"."is_active" = true;

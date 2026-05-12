@@ -63,16 +63,10 @@ export default async function AdminDashboardPage() {
     ne(orders.status, "PENDING"),
   );
 
-  // KPIs
-  const [
-    productsKpi,
-    ordersKpi,
-    customersKpi,
-    revenueRow,
-    revenuePrevRow,
-    paidOrdersRow,
-    paidOrdersPrevRow,
-  ] = await Promise.all([
+  // KPIs — Promise.allSettled para que el dashboard no se rompa entero si una
+  // query individual hace timeout en el pooler de Supabase. Cada KPI tiene un
+  // fallback razonable.
+  const settled = await Promise.allSettled([
     db.select({ count: count() }).from(products),
     db.select({ count: count() }).from(orders),
     db.select({ count: count() }).from(profiles),
@@ -105,6 +99,22 @@ export default async function AdminDashboardPage() {
         ),
       ),
   ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pick = <T,>(idx: number, fallback: T): T => {
+    const r = settled[idx];
+    if (r.status === "fulfilled") return r.value as unknown as T;
+    console.warn(`[admin.kpi] query ${idx} failed:`, (r.reason as Error)?.message);
+    return fallback;
+  };
+
+  const productsKpi = pick(0, [{ count: 0 }]);
+  const ordersKpi = pick(1, [{ count: 0 }]);
+  const customersKpi = pick(2, [{ count: 0 }]);
+  const revenueRow = pick(3, [{ total: 0 }]);
+  const revenuePrevRow = pick(4, [{ total: 0 }]);
+  const paidOrdersRow = pick(5, [{ count: 0 }]);
+  const paidOrdersPrevRow = pick(6, [{ count: 0 }]);
 
   const revenue30 = Number(revenueRow[0]?.total ?? 0);
   const revenuePrev = Number(revenuePrevRow[0]?.total ?? 0);

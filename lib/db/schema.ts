@@ -9,8 +9,9 @@ import {
   integer,
   pgEnum,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // ------------------------------------------------------
 // ENUMS
@@ -90,24 +91,34 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const productVariants = pgTable("product_variants", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  productId: uuid("product_id")
-    .references(() => products.id, { onDelete: "cascade" })
-    .notNull(),
-  sku: varchar("sku", { length: 100 }).notNull().unique(),
-  name: varchar("name", { length: 100 }), // Ej: "Baño de Oro", "Acero Inoxidable"
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  // Precio "antes" para mostrar tachado cuando price < compareAtPrice
-  compareAtPrice: decimal("compare_at_price", { precision: 10, scale: 2 }),
-  stock: integer("stock").default(0).notNull(),
-  // Datos físicos requeridos por Coordinadora para cotizar envío
-  weightGrams: integer("weight_grams"),
-  lengthCm: integer("length_cm"),
-  widthCm: integer("width_cm"),
-  heightCm: integer("height_cm"),
-  isActive: boolean("is_active").default(true).notNull(),
-});
+export const productVariants = pgTable(
+  "product_variants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    productId: uuid("product_id")
+      .references(() => products.id, { onDelete: "cascade" })
+      .notNull(),
+    sku: varchar("sku", { length: 100 }).notNull().unique(),
+    name: varchar("name", { length: 100 }), // Ej: "Baño de Oro", "Acero Inoxidable"
+    price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+    // Precio "antes" para mostrar tachado cuando price < compareAtPrice
+    compareAtPrice: decimal("compare_at_price", { precision: 10, scale: 2 }),
+    stock: integer("stock").default(0).notNull(),
+    // Datos físicos requeridos por Coordinadora para cotizar envío
+    weightGrams: integer("weight_grams"),
+    lengthCm: integer("length_cm"),
+    widthCm: integer("width_cm"),
+    heightCm: integer("height_cm"),
+    isActive: boolean("is_active").default(true).notNull(),
+  },
+  (table) => [
+    // Partial index para el panel admin (stock bajo): solo variantes activas,
+    // ordenadas por stock ascendente.
+    index("product_variants_active_low_stock_idx")
+      .on(table.stock)
+      .where(sql`${table.isActive} = true`),
+  ],
+);
 
 export const productImages = pgTable("product_images", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -123,7 +134,9 @@ export const productImages = pgTable("product_images", {
 // 3. TRANSACCIONES Y PEDIDOS (Inmutabilidad)
 // ------------------------------------------------------
 
-export const orders = pgTable("orders", {
+export const orders = pgTable(
+  "orders",
+  {
   id: uuid("id").defaultRandom().primaryKey(),
   // Nullable: si el pedido es de un guest (sin cuenta), profileId es null y
   // usamos guestEmail + el snapshot de envío como fuente de contacto.
@@ -182,7 +195,14 @@ export const orders = pgTable("orders", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+  },
+  (table) => [
+    // Acelera el dashboard admin (filtros por status + período) y listado por
+    // fecha más reciente.
+    index("orders_status_created_at_idx").on(table.status, table.createdAt.desc()),
+    index("orders_created_at_idx").on(table.createdAt.desc()),
+  ],
+);
 
 // Avisos de "Avísame cuando llegue" — la suscripción es por producto
 // (no por variante) porque el admin recrea variantes al editar.
