@@ -371,7 +371,7 @@ export default async function HomePage() {
               actionLabel="Ver todos"
             />
 
-            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
+            <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 lg:gap-x-8">
               {featuredProducts.map((p) => (
                 <ProductCard
                   key={p.id}

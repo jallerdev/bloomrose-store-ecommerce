@@ -68,8 +68,8 @@ export default async function AdminProductosPage({ searchParams }: PageProps) {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        <table className="w-full caption-bottom text-sm">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <table className="w-full min-w-[720px] caption-bottom text-sm">
           <thead className="border-b border-border bg-muted/30">
             <tr>
               <Th>Producto</Th>

@@ -59,8 +59,8 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
                 <Th>Cliente</Th>

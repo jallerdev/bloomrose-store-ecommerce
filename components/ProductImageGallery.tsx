@@ -83,7 +83,7 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
     <>
       <div className="flex flex-col gap-3">
         {/* Imagen principal */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 mb-1">
           <div
             ref={mainRef}
             className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-secondary"
@@ -183,11 +183,11 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
                     goTo(index, index > selectedIndex ? "right" : "left")
                   }
                   className={cn(
-                    "group relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl transition-all duration-200 sm:h-20 sm:w-20",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "group relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 bg-secondary transition-all duration-200 sm:h-20 sm:w-20",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                     active
-                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                      : "ring-1 ring-border opacity-60 hover:opacity-100 hover:ring-foreground/40",
+                      ? "border-foreground"
+                      : "border-transparent hover:border-foreground/30",
                   )}
                 >
                   <Image
@@ -195,8 +195,10 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
                     alt={image.alt}
                     fill
                     className={cn(
-                      "object-cover transition-transform duration-300",
-                      !active && "group-hover:scale-105",
+                      "object-cover transition-all duration-300",
+                      active
+                        ? "opacity-100"
+                        : "opacity-90 group-hover:opacity-100 group-hover:scale-105",
                     )}
                     sizes="80px"
                   />

@@ -68,8 +68,17 @@
   * {
     @apply border-border;
   }
+  /* Reserva espacio del scrollbar para evitar que el contenido se sienta
+     desplazado a la izquierda cuando aparece la barra (Windows/Linux,
+     y Chrome/Edge cuando está configurado con "always show"). */
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground;
+    /* Defensa contra cualquier elemento que cree overflow horizontal.
+       Usamos `clip` en vez de `hidden` para no romper position:sticky. */
+    overflow-x: clip;
   }
 }
 

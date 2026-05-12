@@ -73,7 +73,7 @@ export function FavoritesClient({ products }: Props) {
       <p className="mb-6 text-sm text-muted-foreground">
         {favorites.length} pieza{favorites.length === 1 ? "" : "s"} en tu lista
       </p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 lg:gap-x-8 xl:grid-cols-4">
         {favorites.map((p) => (
           <ProductCard
             key={p.id}

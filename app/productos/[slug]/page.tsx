@@ -296,7 +296,7 @@ export default async function ProductPage({
             aria-label="Productos relacionados"
             className="mt-16 border-t border-border pt-12"
           >
-            <div className="mb-6 flex items-end justify-between">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="font-serif text-2xl text-foreground sm:text-3xl">
                   También te puede gustar
@@ -307,12 +307,13 @@ export default async function ProductPage({
               </div>
               <Link
                 href="/productos"
-                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
               >
                 Ver catálogo
+                <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-4 lg:gap-x-8">
               {related.map((p) => {
                 const v = p.variants[0];
                 if (!v) return null;

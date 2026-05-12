@@ -156,7 +156,7 @@ export default async function AdminPedidosPage({ searchParams }: PageProps) {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
                 <Th>Referencia</Th>

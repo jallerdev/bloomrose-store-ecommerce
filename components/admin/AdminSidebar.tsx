@@ -11,7 +11,6 @@ import {
   Ticket,
   Flower2,
   Menu,
-  X,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
@@ -19,6 +18,12 @@ import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface SidebarLinkData {
   label: string;
@@ -254,42 +259,27 @@ export function AdminMobileMenu({
   const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-secondary lg:hidden"
-        aria-label="Abrir menú"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Cerrar menú"
-            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          type="button"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-secondary lg:hidden"
+          aria-label="Abrir menú"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-72 p-0 sm:max-w-72">
+        <SheetTitle className="sr-only">Menú de administración</SheetTitle>
+        <div className="flex h-full flex-col">
+          <SidebarBody
+            user={user}
+            pendingOrdersCount={pendingOrdersCount}
+            collapsed={false}
+            onNavigate={() => setOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col border-r border-border bg-card shadow-xl">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
-              aria-label="Cerrar menú"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <SidebarBody
-              user={user}
-              pendingOrdersCount={pendingOrdersCount}
-              collapsed={false}
-              onNavigate={() => setOpen(false)}
-            />
-          </aside>
         </div>
-      )}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

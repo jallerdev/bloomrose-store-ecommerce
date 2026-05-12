@@ -190,63 +190,70 @@ export function ProductDetailClient({ product, variants }: Props) {
 
       <Separator />
 
-      {/* Cantidad + carrito + wishlist + share */}
+      {/* Acciones de compra
+          Mobile: row 1 (cantidad + carrito) + row 2 (wishlist + share, 50/50)
+          Desktop sm+: todo en una sola fila */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div className="flex h-12 items-center overflow-hidden rounded-xl border border-border">
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            disabled={quantity <= 1 || isOutOfStock}
-            className="flex h-full w-12 items-center justify-center text-foreground transition-colors hover:bg-secondary disabled:text-muted-foreground"
-            aria-label="Reducir cantidad"
-          >
-            <Minus className="h-4 w-4" />
-          </button>
-          <span className="flex h-full w-12 items-center justify-center border-x border-border text-sm font-medium tabular-nums">
-            {quantity}
-          </span>
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => Math.min(selected.stock, q + 1))}
-            disabled={quantity >= selected.stock || isOutOfStock}
-            className="flex h-full w-12 items-center justify-center text-foreground transition-colors hover:bg-secondary disabled:text-muted-foreground"
-            aria-label="Aumentar cantidad"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+        <div className="flex gap-3 sm:contents">
+          <div className="flex h-12 shrink-0 items-center overflow-hidden rounded-xl border border-border">
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={quantity <= 1 || isOutOfStock}
+              className="flex h-full w-10 items-center justify-center text-foreground transition-colors hover:bg-secondary disabled:text-muted-foreground sm:w-12"
+              aria-label="Reducir cantidad"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <span className="flex h-full w-10 items-center justify-center border-x border-border text-sm font-medium tabular-nums sm:w-12">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.min(selected.stock, q + 1))}
+              disabled={quantity >= selected.stock || isOutOfStock}
+              className="flex h-full w-10 items-center justify-center text-foreground transition-colors hover:bg-secondary disabled:text-muted-foreground sm:w-12"
+              aria-label="Aumentar cantidad"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+
+          <AddToCartButton
+            product={{
+              id: selected.id,
+              productId: product.id,
+              title: product.title,
+              price,
+              stock: selected.stock,
+              imageUrl: product.images[0]?.url ?? "",
+              variantName: selected.name ?? undefined,
+            }}
+            quantity={quantity}
+            className="h-12 flex-1 rounded-xl bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 disabled:opacity-50"
+          />
         </div>
 
-        <AddToCartButton
-          product={{
-            id: selected.id,
-            productId: product.id,
-            title: product.title,
-            price,
-            stock: selected.stock,
-            imageUrl: product.images[0]?.url ?? "",
-            variantName: selected.name ?? undefined,
-          }}
-          quantity={quantity}
-          className="h-12 flex-1 rounded-xl bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 disabled:opacity-50"
-        />
+        <div className="flex gap-3 sm:contents">
+          <WishlistButton
+            productId={product.id}
+            productName={product.title}
+            productPrice={price}
+            variant="lg"
+            className="h-12 flex-1 sm:flex-initial"
+          />
 
-        <WishlistButton
-          productId={product.id}
-          productName={product.title}
-          productPrice={price}
-          variant="lg"
-        />
-
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-12 w-12 flex-shrink-0 rounded-xl"
-          onClick={handleShare}
-          aria-label="Compartir"
-        >
-          <Share2 className="h-5 w-5 text-muted-foreground" />
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-12 flex-1 rounded-xl sm:w-12 sm:flex-initial"
+            onClick={handleShare}
+            aria-label="Compartir"
+          >
+            <Share2 className="h-5 w-5 text-muted-foreground" />
+          </Button>
+        </div>
       </div>
 
       {isOutOfStock && (
