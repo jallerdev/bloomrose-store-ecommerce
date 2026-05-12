@@ -90,7 +90,7 @@ function SidebarBody({
             "flex items-center gap-2.5 transition-colors hover:opacity-80",
             collapsed && "justify-center",
           )}
-          aria-label="Bloomrose Admin"
+          aria-label="Bloom Rose Admin"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-sm">
             <Flower2 className="h-4 w-4 text-primary-foreground" />
@@ -98,7 +98,7 @@ function SidebarBody({
           {!collapsed && (
             <div>
               <p className="font-brand text-xl leading-none text-foreground">
-                Bloomrose
+                Bloom Rose
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                 Admin Panel

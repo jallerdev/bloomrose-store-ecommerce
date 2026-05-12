@@ -8,7 +8,7 @@ import { addresses, profiles } from "@/lib/db/schema";
 import { StoreHeader } from "@/components/StoreHeader";
 import { CheckoutClient } from "./CheckoutClient";
 
-export const metadata = { title: "Checkout · Bloomrose" };
+export const metadata = { title: "Checkout · Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {

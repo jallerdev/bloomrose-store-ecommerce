@@ -40,7 +40,7 @@ export function AuthForm() {
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="font-brand text-5xl text-primary">Bloomrose</h1>
+        <h1 className="font-brand text-5xl text-primary">Bloom Rose</h1>
         <p className="text-sm text-muted-foreground">
           Únete a nuestra exclusiva colección
         </p>
@@ -95,7 +95,7 @@ function LoginForm({ returnTo }: { returnTo: string }) {
     startTransition(async () => {
       const res = await loginAction(fd);
       if (res?.error) toast.error(res.error);
-      else toast.success("¡Bienvenida a Bloomrose!");
+      else toast.success("¡Bienvenida a Bloom Rose!");
     });
   }
 

@@ -3,7 +3,7 @@ import { StaticPageShell } from "@/components/StaticPageShell";
 export const metadata = {
   title: "Términos y condiciones",
   description:
-    "Términos y condiciones de uso del sitio y compras en Bloomrose Accesorios.",
+    "Términos y condiciones de uso del sitio y compras en Bloom Rose Accesorios.",
   alternates: { canonical: "/terminos" },
 };
 
@@ -19,13 +19,13 @@ export default function TerminosPage() {
       ]}
     >
       <p>
-        Bienvenida a Bloomrose Accesorios. Al navegar este sitio o realizar una
+        Bienvenida a Bloom Rose Accesorios. Al navegar este sitio o realizar una
         compra aceptas los presentes términos. Te pedimos leerlos con atención.
       </p>
 
-      <h2>1. Sobre Bloomrose</h2>
+      <h2>1. Sobre Bloom Rose</h2>
       <p>
-        Bloomrose Accesorios es una marca colombiana de bisutería artesanal que
+        Bloom Rose Accesorios es una marca colombiana de bisutería artesanal que
         opera a través del sitio{" "}
         <strong>https://bloomroseaccesorios.com</strong>. Las compras se rigen
         por la legislación colombiana, en particular la Ley 1480 de 2011
@@ -74,7 +74,7 @@ export default function TerminosPage() {
       <p>
         Procesamos los pagos a través de <strong>Wompi</strong>, una pasarela
         certificada PCI DSS. Aceptamos tarjetas de crédito y débito, PSE,
-        Nequi y Bancolombia. Bloomrose no almacena datos de tu tarjeta.
+        Nequi y Bancolombia. Bloom Rose no almacena datos de tu tarjeta.
       </p>
 
       <h2>5. Envíos</h2>
@@ -102,13 +102,13 @@ export default function TerminosPage() {
       <h2>8. Propiedad intelectual</h2>
       <p>
         Todo el contenido del sitio (textos, imágenes, logo, diseños) es
-        propiedad de Bloomrose Accesorios y está protegido por las leyes de
+        propiedad de Bloom Rose Accesorios y está protegido por las leyes de
         propiedad intelectual. No está permitido reproducirlo sin autorización.
       </p>
 
       <h2>9. Limitación de responsabilidad</h2>
       <p>
-        Bloomrose responde por la calidad e idoneidad de las piezas vendidas en
+        Bloom Rose responde por la calidad e idoneidad de las piezas vendidas en
         los términos previstos por la ley. No asumimos responsabilidad por usos
         inadecuados, alteraciones hechas por terceros o daños imputables al
         comprador.

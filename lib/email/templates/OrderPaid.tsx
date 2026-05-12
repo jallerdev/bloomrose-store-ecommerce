@@ -52,10 +52,10 @@ export function OrderPaidEmail({
   return (
     <Html>
       <Head />
-      <Preview>Tu pedido en Bloomrose ha sido confirmado</Preview>
+      <Preview>Tu pedido en Bloom Rose ha sido confirmado</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Heading style={brand}>Bloomrose</Heading>
+          <Heading style={brand}>Bloom Rose</Heading>
           <Heading style={h1}>¡Gracias por tu compra, {customerName}!</Heading>
           <Text style={paragraph}>
             Recibimos tu pago. Estamos preparando tu pedido con cariño.

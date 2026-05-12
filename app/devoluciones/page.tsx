@@ -3,7 +3,7 @@ import { StaticPageShell } from "@/components/StaticPageShell";
 export const metadata = {
   title: "Cambios y devoluciones",
   description:
-    "Política de cambios y devoluciones de Bloomrose Accesorios. 30 días para que estés segura de tu compra.",
+    "Política de cambios y devoluciones de Bloom Rose Accesorios. 30 días para que estés segura de tu compra.",
   alternates: { canonical: "/devoluciones" },
 };
 

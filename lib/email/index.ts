@@ -22,7 +22,7 @@ function getResend(): Resend | null {
   return resendClient;
 }
 
-const FROM = process.env.EMAIL_FROM ?? "Bloomrose <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "Bloom Rose <onboarding@resend.dev>";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 const fmt = (n: number) =>
@@ -69,7 +69,7 @@ export async function sendWelcomeEmail(args: {
 }) {
   return send({
     to: args.email,
-    subject: "Bienvenida a Bloomrose",
+    subject: "Bienvenida a Bloom Rose",
     react: WelcomeEmail({
       customerName: args.firstName || "amiga",
       shopUrl: `${SITE}/productos`,

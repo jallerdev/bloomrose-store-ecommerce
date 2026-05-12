@@ -9,7 +9,7 @@ import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { ShoppingBag, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const metadata = { title: "Mis pedidos — Bloomrose" };
+export const metadata = { title: "Mis pedidos — Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 const fmt = (n: number) =>

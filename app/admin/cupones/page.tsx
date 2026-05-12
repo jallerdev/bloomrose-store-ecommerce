@@ -5,7 +5,7 @@ import { couponRedemptions, coupons } from "@/lib/db/schema";
 
 import { CouponsClient } from "./CouponsClient";
 
-export const metadata = { title: "Cupones — Admin Bloomrose" };
+export const metadata = { title: "Cupones — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminCuponesPage() {

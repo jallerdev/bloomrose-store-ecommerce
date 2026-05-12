@@ -25,10 +25,10 @@ export function BackInStockEmail({
   return (
     <Html>
       <Head />
-      <Preview>{productTitle} ya está disponible en Bloomrose</Preview>
+      <Preview>{productTitle} ya está disponible en Bloom Rose</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Heading style={brand}>Bloomrose</Heading>
+          <Heading style={brand}>Bloom Rose</Heading>
           <Heading style={h1}>¡Ya está de vuelta!</Heading>
           <Text style={paragraph}>
             La pieza que estabas esperando volvió al inventario. Como las

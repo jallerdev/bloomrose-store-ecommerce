@@ -8,7 +8,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { FavoritesClient } from "./FavoritesClient";
 import { Button } from "@/components/ui/button";
 
-export const metadata = { title: "Favoritos · Bloomrose" };
+export const metadata = { title: "Favoritos · Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 export default async function FavoritesPage() {

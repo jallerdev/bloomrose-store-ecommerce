@@ -34,7 +34,7 @@ import {
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { SalesChart } from "@/components/admin/SalesChart";
 
-export const metadata = { title: "Dashboard — Admin Bloomrose" };
+export const metadata = { title: "Dashboard — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 const fmtCOP = (n: number) =>

@@ -6,7 +6,7 @@ import { profiles } from "@/lib/db/schema";
 import { CustomerTableActions } from "./CustomerTableActions";
 import { TableSearch } from "@/components/admin/TableSearch";
 
-export const metadata = { title: "Clientes — Admin Bloomrose" };
+export const metadata = { title: "Clientes — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 interface PageProps {

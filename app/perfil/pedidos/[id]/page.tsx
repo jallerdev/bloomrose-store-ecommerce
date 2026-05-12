@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Truck } from "lucide-react";
 
-export const metadata = { title: "Detalle de pedido — Bloomrose" };
+export const metadata = { title: "Detalle de pedido — Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 const fmt = (n: number) =>

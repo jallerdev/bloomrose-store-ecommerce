@@ -17,7 +17,7 @@ export function Footer() {
                 className="rounded-full"
               />
               <span className="font-brand text-2xl leading-none text-foreground">
-                Bloomrose
+                Bloom Rose
               </span>
             </div>
             <p className="mt-3 max-w-xs text-xs text-muted-foreground">
@@ -45,7 +45,7 @@ export function Footer() {
             ]}
           />
           <FooterColumn
-            title="Bloomrose"
+            title="Bloom Rose"
             links={[
               { label: "Nosotros", href: "/nosotros" },
               { label: "Mi cuenta", href: "/perfil" },
@@ -65,7 +65,7 @@ export function Footer() {
 
         <div className="mt-10 flex flex-col items-center gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between">
           <p className="text-[11px] text-muted-foreground">
-            © {new Date().getFullYear()} Bloomrose. Todos los derechos
+            © {new Date().getFullYear()} Bloom Rose. Todos los derechos
             reservados.
           </p>
           <p className="text-[11px] text-muted-foreground">

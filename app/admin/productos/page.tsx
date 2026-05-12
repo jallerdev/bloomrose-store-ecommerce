@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableSearch } from "@/components/admin/TableSearch";
 import { ProductsTableActions } from "@/app/admin/productos/ProductsTableActions";
 
-export const metadata = { title: "Productos — Admin Bloomrose" };
+export const metadata = { title: "Productos — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 const fmtCOP = (n: number) =>

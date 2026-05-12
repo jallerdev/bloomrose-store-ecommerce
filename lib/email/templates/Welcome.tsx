@@ -17,13 +17,13 @@ export function WelcomeEmail({ customerName, shopUrl }: WelcomeEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Bienvenida a Bloomrose</Preview>
+      <Preview>Bienvenida a Bloom Rose</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Heading style={brand}>Bloomrose</Heading>
+          <Heading style={brand}>Bloom Rose</Heading>
           <Heading style={h1}>¡Bienvenida, {customerName}!</Heading>
           <Text style={paragraph}>
-            Gracias por unirte a la familia Bloomrose. Estamos felices de
+            Gracias por unirte a la familia Bloom Rose. Estamos felices de
             tenerte aquí.
           </Text>
           <Text style={paragraph}>

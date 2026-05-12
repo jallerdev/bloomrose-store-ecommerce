@@ -24,7 +24,7 @@ const brand = Sacramento({
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://bloomroseaccesorios.com";
-const SITE_NAME = "Bloomrose Accesorios";
+const SITE_NAME = "Bloom Rose Accesorios";
 const DEFAULT_DESCRIPTION =
   "Bisutería y accesorios artesanales hechos en Colombia. Aretes, collares, pulseras, anillos y más, con envíos a todo el país.";
 
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} · Bisutería artesanal`,
-    template: "%s · Bloomrose",
+    template: "%s · Bloom Rose",
   },
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
   authors: [{ name: SITE_NAME }],
   keywords: [
-    "Bloomrose",
-    "Bloomrose Accesorios",
+    "Bloom Rose",
+    "Bloom Rose Accesorios",
     "bisutería Colombia",
     "accesorios artesanales",
     "aretes",
@@ -89,7 +89,7 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: SITE_NAME,
-  alternateName: "Bloomrose",
+  alternateName: "Bloom Rose",
   url: SITE_URL,
   logo: `${SITE_URL}/images/image.webp`,
   description: DEFAULT_DESCRIPTION,

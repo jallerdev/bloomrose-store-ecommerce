@@ -30,7 +30,7 @@ export function OrderShippedEmail({
       <Preview>Tu pedido va en camino</Preview>
       <Body style={body}>
         <Container style={container}>
-          <Heading style={brand}>Bloomrose</Heading>
+          <Heading style={brand}>Bloom Rose</Heading>
           <Heading style={h1}>¡Tu pedido va en camino, {customerName}!</Heading>
           <Text style={paragraph}>
             Tu pedido <strong>{paymentReference}</strong> ya está en manos de{" "}

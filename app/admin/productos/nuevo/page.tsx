@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { AdminProductForm } from "@/app/admin/productos/AdminProductForm";
 
-export const metadata = { title: "Nuevo Producto — Admin Bloomrose" };
+export const metadata = { title: "Nuevo Producto — Admin Bloom Rose" };
 
 export default async function NuevoProductoPage() {
   const categoriesList = await db

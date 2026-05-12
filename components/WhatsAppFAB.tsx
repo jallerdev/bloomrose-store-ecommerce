@@ -20,7 +20,7 @@ interface Props {
  */
 export function WhatsAppFAB({
   phoneNumber,
-  defaultMessage = "Hola Bloomrose, tengo una consulta",
+  defaultMessage = "Hola Bloom Rose, tengo una consulta",
   isChatOpen,
 }: Props) {
   const [mounted, setMounted] = useState(false);

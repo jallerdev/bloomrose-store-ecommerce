@@ -37,7 +37,7 @@ export default function ContactoPage() {
             description="Lunes a sábado, 9am a 6pm"
             actionLabel="Escribir por WhatsApp"
             href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
-              "Hola Bloomrose, tengo una consulta",
+              "Hola Bloom Rose, tengo una consulta",
             )}`}
             external
           />
@@ -86,7 +86,7 @@ export default function ContactoPage() {
         Ubicación
       </h2>
       <p>
-        Bloomrose Accesorios opera 100% online desde Colombia. No tenemos
+        Bloom Rose Accesorios opera 100% online desde Colombia. No tenemos
         tienda física por ahora, pero todos nuestros pedidos se preparan en
         Bogotá.
       </p>

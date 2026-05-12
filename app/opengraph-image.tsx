@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Bloomrose Accesorios · Bisutería artesanal";
+export const alt = "Bloom Rose Accesorios · Bisutería artesanal";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -79,7 +79,7 @@ export default function OpengraphImage() {
               letterSpacing: -4,
             }}
           >
-            Bloomrose
+            Bloom Rose
           </div>
           <div
             style={{

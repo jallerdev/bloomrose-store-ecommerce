@@ -152,7 +152,7 @@ export async function ProductReviews({ productId, productSlug }: Props) {
           {rows.map((r) => {
             const name =
               [r.firstName, r.lastName].filter(Boolean).join(" ").trim() ||
-              "Cliente Bloomrose";
+              "Cliente Bloom Rose";
             const initials = (
               (r.firstName?.[0] ?? "") + (r.lastName?.[0] ?? "")
             ).toUpperCase() || "B";

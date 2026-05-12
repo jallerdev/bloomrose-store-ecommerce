@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Heart, Leaf, Sparkles, Users, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Nosotros — Bloomrose Accesorios",
+  title: "Nosotros — Bloom Rose Accesorios",
   description:
-    "Conoce la historia detras de Bloomrose. Accesorios artesanales disenados con amor y dedicacion.",
+    "Conoce la historia detras de Bloom Rose. Accesorios artesanales disenados con amor y dedicacion.",
 };
 
 const values = [
@@ -47,7 +47,7 @@ export default function NosotrosPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
-            Sobre <span className="font-brand text-primary text-4xl sm:text-5xl lg:text-6xl">Bloomrose</span>
+            Sobre <span className="font-brand text-primary text-4xl sm:text-5xl lg:text-6xl">Bloom Rose</span>
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
             Accesorios artesanales que cuentan historias y celebran la
@@ -64,7 +64,7 @@ export default function NosotrosPage() {
             <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-2xl bg-secondary lg:max-w-md">
               <Image
                 src="/images/product-necklace.webp"
-                alt="Artesana creando accesorios Bloomrose"
+                alt="Artesana creando accesorios Bloom Rose"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 80vw, 400px"
@@ -81,7 +81,7 @@ export default function NosotrosPage() {
               </h2>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
                 <p>
-                  Bloomrose nacio en 2022 como un pequeno taller artesanal con
+                  Bloom Rose nacio en 2022 como un pequeno taller artesanal con
                   una mision clara: crear accesorios que resaltaran la belleza
                   unica de cada mujer, sin comprometer la calidad ni el
                   compromiso con el medio ambiente.
@@ -92,7 +92,7 @@ export default function NosotrosPage() {
                   por los detalles, lo artesanal y lo autentico.
                 </p>
                 <p>
-                  Hoy, cada pieza de Bloomrose es el resultado de un proceso
+                  Hoy, cada pieza de Bloom Rose es el resultado de un proceso
                   cuidadoso que combina tecnicas tradicionales con disenos
                   contemporaneos, utilizando materiales seleccionados a mano por
                   nuestro equipo.

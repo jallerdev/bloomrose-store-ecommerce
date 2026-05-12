@@ -16,7 +16,7 @@ import { Lock, ExternalLink, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { buildCheckoutUrl } from "@/lib/wompi";
 import { PurchaseTracker } from "@/components/PurchaseTracker";
 
-export const metadata = { title: "Pago · Bloomrose" };
+export const metadata = { title: "Pago · Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 interface Props {

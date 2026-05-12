@@ -6,7 +6,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { getHomeCategories } from "@/lib/db/cached";
 
 export const metadata = {
-  title: "Colecciones — Bloomrose Accesorios",
+  title: "Colecciones — Bloom Rose Accesorios",
   description:
     "Explora nuestras colecciones curadas de accesorios artesanales para cada ocasión y estilo.",
   alternates: { canonical: "/colecciones" },

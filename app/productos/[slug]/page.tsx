@@ -96,7 +96,7 @@ export default async function ProductPage({
       img.url.startsWith("http") ? img.url : `${SITE_URL}${img.url}`,
     ),
     sku: product.variants[0]?.sku,
-    brand: { "@type": "Brand", name: "Bloomrose" },
+    brand: { "@type": "Brand", name: "Bloom Rose" },
     category: product.category?.name,
     ...(reviewCount > 0 && {
       aggregateRating: {

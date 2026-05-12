@@ -3,7 +3,7 @@ import { StaticPageShell } from "@/components/StaticPageShell";
 export const metadata = {
   title: "Cuidado de tus piezas",
   description:
-    "Consejos para mantener tus accesorios Bloomrose como nuevos. Cuidados, limpieza y almacenamiento.",
+    "Consejos para mantener tus accesorios Bloom Rose como nuevos. Cuidados, limpieza y almacenamiento.",
   alternates: { canonical: "/cuidado-de-joyas" },
 };
 
@@ -105,7 +105,7 @@ export default function CuidadoPage() {
       </p>
 
       <p className="mt-8">
-        Cualquier pieza Bloomrose tiene <strong>6 meses de garantía</strong>{" "}
+        Cualquier pieza Bloom Rose tiene <strong>6 meses de garantía</strong>{" "}
         contra defectos de fábrica. Si algo no se siente bien con tu compra,{" "}
         <a href="/contacto">cuéntanos</a>.
       </p>

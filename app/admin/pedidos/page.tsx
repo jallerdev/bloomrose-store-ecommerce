@@ -7,7 +7,7 @@ import { OrderStatusBadge } from "@/components/OrderStatusBadge";
 import { TableSearch } from "@/components/admin/TableSearch";
 import { cn } from "@/lib/utils";
 
-export const metadata = { title: "Pedidos — Admin Bloomrose" };
+export const metadata = { title: "Pedidos — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 const fmtCOP = (n: number) =>

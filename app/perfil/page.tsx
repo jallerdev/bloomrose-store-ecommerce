@@ -7,7 +7,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import { User, MapPin, ShoppingBag, Settings } from "lucide-react";
 import Link from "next/link";
 
-export const metadata = { title: "Mi Perfil — Bloomrose" };
+export const metadata = { title: "Mi Perfil — Bloom Rose" };
 
 export default async function PerfilPage() {
   const supabase = await createClient();

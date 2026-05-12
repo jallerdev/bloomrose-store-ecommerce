@@ -26,7 +26,7 @@ export const metadata = {
   // Title del root layout aplica por defecto. Especificamos uno propio para que
   // la home tenga un título descriptivo en SERPs.
   title: {
-    absolute: "Bloomrose Accesorios · Bisutería artesanal hecha en Colombia",
+    absolute: "Bloom Rose Accesorios · Bisutería artesanal hecha en Colombia",
   },
   description:
     "Accesorios artesanales para resaltar tu esencia única. Aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
@@ -94,7 +94,7 @@ const testimonials = [
   },
   {
     quote:
-      "Ya tengo tres piezas Bloomrose. No se me han oscurecido ni un poco con el tiempo. Vale cada peso.",
+      "Ya tengo tres piezas Bloom Rose. No se me han oscurecido ni un poco con el tiempo. Vale cada peso.",
     name: "Daniela P.",
     location: "Cali",
     rating: 5,
@@ -288,7 +288,7 @@ export default async function HomePage() {
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-secondary shadow-xl shadow-primary/10">
               <Image
                 src="/images/product-necklace.webp"
-                alt="Collar artesanal Bloomrose"
+                alt="Collar artesanal Bloom Rose"
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 400px"
@@ -398,12 +398,12 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── Promesa Bloomrose ── */}
+      {/* ── Promesa Bloom Rose ── */}
       <section className="border-b border-border">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="text-center">
             <p className="text-[10px] font-semibold uppercase tracking-extra-wide text-primary">
-              La promesa Bloomrose
+              La promesa Bloom Rose
             </p>
             <h2 className="mx-auto mt-3 max-w-2xl font-serif text-2xl leading-tight text-foreground sm:text-3xl lg:text-4xl">
               Más que accesorios:{" "}
@@ -459,7 +459,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <SectionHeader
             eyebrow="Lo que dicen nuestras clientas"
-            title="Confían en Bloomrose"
+            title="Confían en Bloom Rose"
             subtitle="Reseñas reales de quienes ya viven la experiencia"
             center
           />
@@ -520,7 +520,7 @@ export default async function HomePage() {
             <div className="relative mx-auto max-w-xl text-center">
               <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-extra-wide text-primary backdrop-blur">
                 <Sparkles className="h-3 w-3" />
-                Comunidad Bloomrose
+                Comunidad Bloom Rose
               </div>
               <h2 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
                 Sé la primera en enterarte

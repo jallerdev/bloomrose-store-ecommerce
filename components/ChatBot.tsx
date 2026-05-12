@@ -21,7 +21,7 @@ interface Props {
 const SYSTEM_GREETING: Message = {
   role: "assistant",
   content:
-    "¡Hola! Soy Rosa 🌸, la asistente de Bloomrose. Cuéntame, ¿en qué te puedo ayudar? Puedo responderte sobre productos, envíos o devoluciones.",
+    "¡Hola! Soy Rosa 🌸, la asistente de Bloom Rose. Cuéntame, ¿en qué te puedo ayudar? Puedo responderte sobre productos, envíos o devoluciones.",
 };
 
 const HIDE_PATHS = ["/admin", "/auth", "/checkout/pago"];
@@ -140,7 +140,7 @@ export function ChatBot({ enabled, onOpenChange }: Props) {
               <div>
                 <p className="text-sm font-semibold text-foreground">Rosa</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Asistente Bloomrose
+                  Asistente Bloom Rose
                 </p>
               </div>
             </div>

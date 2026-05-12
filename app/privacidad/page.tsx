@@ -3,7 +3,7 @@ import { StaticPageShell } from "@/components/StaticPageShell";
 export const metadata = {
   title: "Política de privacidad",
   description:
-    "Cómo Bloomrose Accesorios protege y trata los datos personales de sus clientas.",
+    "Cómo Bloom Rose Accesorios protege y trata los datos personales de sus clientas.",
   alternates: { canonical: "/privacidad" },
 };
 
@@ -19,7 +19,7 @@ export default function PrivacidadPage() {
       ]}
     >
       <p>
-        En Bloomrose Accesorios cuidamos los datos de nuestras clientas con la
+        En Bloom Rose Accesorios cuidamos los datos de nuestras clientas con la
         misma atención con la que armamos cada pieza. Esta política explica
         qué información recolectamos, para qué la usamos y cuáles son tus
         derechos como titular de datos.
@@ -33,7 +33,7 @@ export default function PrivacidadPage() {
 
       <h2>2. Responsable del tratamiento</h2>
       <p>
-        <strong>Bloomrose Accesorios.</strong> Para temas de protección de
+        <strong>Bloom Rose Accesorios.</strong> Para temas de protección de
         datos puedes escribirnos desde nuestra página de{" "}
         <a href="/contacto">contacto</a>.
       </p>

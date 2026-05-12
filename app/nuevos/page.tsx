@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { Sparkles } from "lucide-react";
 
 export const metadata = {
-  title: "Nuevos Lanzamientos — Bloomrose Accesorios",
+  title: "Nuevos Lanzamientos — Bloom Rose Accesorios",
   description:
     "Descubre las ultimas novedades en accesorios artesanales. Piezas recien llegadas a nuestra coleccion.",
 };

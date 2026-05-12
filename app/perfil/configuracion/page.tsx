@@ -7,7 +7,7 @@ import { StoreHeader } from "@/components/StoreHeader";
 import Link from "next/link";
 import { ProfileSettingsForm } from "@/app/perfil/configuracion/ProfileSettingsForm";
 
-export const metadata = { title: "Configuración — Bloomrose" };
+export const metadata = { title: "Configuración — Bloom Rose" };
 
 export default async function ConfiguracionPage() {
   const supabase = await createClient();

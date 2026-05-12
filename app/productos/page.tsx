@@ -14,7 +14,7 @@ export const metadata = {
     "Explora nuestra colección de bisutería artesanal: aretes, collares, pulseras, anillos y más, con envíos a toda Colombia.",
   alternates: { canonical: "/productos" },
   openGraph: {
-    title: "Catálogo de accesorios · Bloomrose",
+    title: "Catálogo de accesorios · Bloom Rose",
     description:
       "Bisutería artesanal hecha en Colombia. Aretes, collares, pulseras y anillos.",
     url: "/productos",

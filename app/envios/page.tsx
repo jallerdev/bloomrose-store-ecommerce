@@ -3,7 +3,7 @@ import { StaticPageShell } from "@/components/StaticPageShell";
 export const metadata = {
   title: "Política de envíos",
   description:
-    "Información sobre tiempos, costos y cobertura de envíos de Bloomrose Accesorios en Colombia.",
+    "Información sobre tiempos, costos y cobertura de envíos de Bloom Rose Accesorios en Colombia.",
   alternates: { canonical: "/envios" },
 };
 

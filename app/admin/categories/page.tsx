@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { createCategory } from "./actions";
 import { CategoryDeleteButton } from "./CategoryDeleteButton";
 
-export const metadata = { title: "Categorías — Admin Bloomrose" };
+export const metadata = { title: "Categorías — Admin Bloom Rose" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
