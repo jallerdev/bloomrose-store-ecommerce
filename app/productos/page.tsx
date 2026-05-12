@@ -6,6 +6,7 @@ import { getCatalogProducts } from "@/lib/db/cached";
 import { StoreHeader } from "@/components/StoreHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters, type FilterFacets } from "@/components/ProductFilters";
+import { MobileFiltersTrigger } from "@/components/MobileFiltersTrigger";
 
 export const metadata = {
   title: "Catálogo de accesorios",
@@ -26,8 +27,10 @@ interface ProductRow {
   title: string;
   slug: string;
   description: string;
+  createdAt: Date;
   category: { name: string; slug: string } | null;
   variants: {
+    id: string;
     name: string | null;
     price: string;
     compareAtPrice: string | null;
@@ -35,6 +38,8 @@ interface ProductRow {
   }[];
   images: { url: string }[];
 }
+
+const NEWNESS_WINDOW_DAYS = 30;
 
 export default async function ProductosPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -45,10 +50,18 @@ export default async function ProductosPage(props: {
     typeof params.category === "string" ? params.category : undefined;
   const material =
     typeof params.material === "string" ? params.material : undefined;
+  const minPriceParam =
+    typeof params.minPrice === "string"
+      ? parseFloat(params.minPrice)
+      : undefined;
   const maxPriceParam =
     typeof params.maxPrice === "string"
       ? parseFloat(params.maxPrice)
       : undefined;
+  const onSale = params.onSale === "1";
+  const inStock = params.inStock === "1";
+  const isNew = params.isNew === "1";
+  const sort = typeof params.sort === "string" ? params.sort : "relevance";
 
   // Catálogo activo + relaciones para construir facets dinámicas (cacheado)
   let allActiveProducts: ProductRow[] = [];
@@ -60,10 +73,12 @@ export default async function ProductosPage(props: {
       title: p.title,
       slug: p.slug,
       description: p.description,
+      createdAt: p.createdAt,
       category: p.category
         ? { name: p.category.name, slug: p.category.slug }
         : null,
       variants: p.variants.map((v) => ({
+        id: v.id,
         name: v.name,
         price: v.price,
         compareAtPrice: v.compareAtPrice,
@@ -114,6 +129,8 @@ export default async function ProductosPage(props: {
   };
 
   // ── Aplicar filtros sobre el catálogo cargado
+  const newnessCutoff = Date.now() - NEWNESS_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+
   const catalogView = allActiveProducts
     .filter((p) => p.variants.length > 0)
     .map((product) => {
@@ -125,6 +142,11 @@ export default async function ProductosPage(props: {
       const minVariantPrice = Math.min(
         ...product.variants.map((v) => Number(v.price)),
       );
+      const hasDiscount = product.variants.some(
+        (v) =>
+          v.compareAtPrice && Number(v.compareAtPrice) > Number(v.price),
+      );
+      const createdAtMs = new Date(product.createdAt).getTime();
       return {
         id: product.id,
         name: product.title,
@@ -139,6 +161,11 @@ export default async function ProductosPage(props: {
         material: defaultVariant.name ?? undefined,
         materials,
         stock: totalStock,
+        hasDiscount,
+        createdAtMs,
+        defaultVariantId: defaultVariant.id,
+        defaultVariantName: defaultVariant.name ?? undefined,
+        defaultVariantStock: defaultVariant.stock,
         variantCount: product.variants.length,
         image: product.images[0]?.url ?? "",
         rating: 5,
@@ -151,18 +178,45 @@ export default async function ProductosPage(props: {
       if (categorySlug && p.categorySlug !== categorySlug) return false;
       if (material && !p.materials.includes(material)) return false;
       if (
+        minPriceParam !== undefined &&
+        !isNaN(minPriceParam) &&
+        minPriceParam > facets.priceRange.min &&
+        p.minVariantPrice < minPriceParam
+      )
+        return false;
+      if (
         maxPriceParam !== undefined &&
         !isNaN(maxPriceParam) &&
         maxPriceParam < facets.priceRange.max &&
         p.minVariantPrice > maxPriceParam
       )
         return false;
+      if (onSale && !p.hasDiscount) return false;
+      if (inStock && p.stock <= 0) return false;
+      if (isNew && p.createdAtMs < newnessCutoff) return false;
       if (q) {
         const needle = q.toLowerCase();
         if (!p.searchHaystack.includes(needle)) return false;
       }
       return true;
     });
+
+  // ── Ordenamiento
+  switch (sort) {
+    case "price_asc":
+      catalogView.sort((a, b) => a.minVariantPrice - b.minVariantPrice);
+      break;
+    case "price_desc":
+      catalogView.sort((a, b) => b.minVariantPrice - a.minVariantPrice);
+      break;
+    case "name_asc":
+      catalogView.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case "newest":
+      catalogView.sort((a, b) => b.createdAtMs - a.createdAtMs);
+      break;
+    // "relevance" → mantiene el orden por createdAt desc del cache
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -182,7 +236,7 @@ export default async function ProductosPage(props: {
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 lg:flex-row">
-          <aside className="w-full flex-shrink-0 lg:w-64">
+          <aside className="hidden w-64 flex-shrink-0 lg:block">
             <Suspense
               fallback={
                 <div className="h-64 w-full animate-pulse rounded-xl bg-card" />
@@ -193,7 +247,7 @@ export default async function ProductosPage(props: {
           </aside>
 
           <section className="flex-1">
-            <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+            <div className="mb-6 flex items-center justify-between gap-3 border-b border-border pb-4">
               <p className="text-xs text-muted-foreground sm:text-sm">
                 Mostrando{" "}
                 <span className="font-semibold text-foreground">
@@ -209,6 +263,11 @@ export default async function ProductosPage(props: {
                   </>
                 )}
               </p>
+              <div className="lg:hidden">
+                <Suspense fallback={null}>
+                  <MobileFiltersTrigger facets={facets} />
+                </Suspense>
+              </div>
             </div>
 
             {dbError ? (
@@ -236,6 +295,9 @@ export default async function ProductosPage(props: {
                   <ProductCard
                     key={product.id}
                     productId={product.id}
+                    defaultVariantId={product.defaultVariantId}
+                    defaultVariantName={product.defaultVariantName}
+                    defaultVariantStock={product.defaultVariantStock}
                     name={product.name}
                     slug={product.slug}
                     category={product.category}

@@ -204,6 +204,14 @@ export default async function PedidoDetallePage({ params }: Props) {
                   <span className="text-muted-foreground">Envío</span>
                   <span>{fmt(Number(order.shippingCost))}</span>
                 </div>
+                {Number(order.giftWrapCost) > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Empaque de regalo
+                    </span>
+                    <span>{fmt(Number(order.giftWrapCost))}</span>
+                  </div>
+                )}
                 <Separator className="my-2" />
                 <div className="flex justify-between text-base font-medium">
                   <span>Total</span>
@@ -232,6 +240,23 @@ export default async function PedidoDetallePage({ params }: Props) {
                 </p>
               </div>
             </div>
+
+            {order.giftWrap && (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-6">
+                <h2 className="mb-2 flex items-center gap-2 font-serif text-lg text-foreground">
+                  🎁 Empaque de regalo
+                </h2>
+                {order.giftMessage ? (
+                  <p className="rounded-lg border border-border bg-background p-3 text-sm italic text-foreground">
+                    “{order.giftMessage}”
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Lo empacamos especial para regalo.
+                  </p>
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </div>

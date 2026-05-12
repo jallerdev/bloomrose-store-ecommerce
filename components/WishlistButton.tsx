@@ -6,9 +6,12 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { useWishlistStore } from "@/lib/store/wishlist";
+import { analytics } from "@/lib/analytics";
 
 interface Props {
   productId: string;
+  productName?: string;
+  productPrice?: number;
   /**
    * "icon" — botón circular pequeño (para usar en cards)
    * "lg"   — botón grande con texto (para PDP)
@@ -20,6 +23,8 @@ interface Props {
 
 export function WishlistButton({
   productId,
+  productName,
+  productPrice,
   variant = "icon",
   className,
   onClickStop = false,
@@ -39,8 +44,16 @@ export function WishlistButton({
     const willAdd = !has;
     startTransition(async () => {
       await toggle(productId);
-      if (willAdd) toast.success("Agregado a favoritos");
-      else toast.success("Removido de favoritos");
+      if (willAdd) {
+        toast.success("Agregado a favoritos");
+        analytics.addToWishlist({
+          item_id: productId,
+          item_name: productName ?? productId,
+          price: productPrice ?? 0,
+        });
+      } else {
+        toast.success("Removido de favoritos");
+      }
     });
   }
 

@@ -44,6 +44,9 @@ export default async function FavoritesPage() {
         originalPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
         material: v.name ?? undefined,
         stock: totalStock,
+        defaultVariantId: v.id,
+        defaultVariantName: v.name ?? undefined,
+        defaultVariantStock: v.stock,
         variantCount: p.variants.length,
         image: p.images[0]?.url ?? "",
       };

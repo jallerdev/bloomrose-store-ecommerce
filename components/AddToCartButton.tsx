@@ -4,6 +4,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 
 interface AddToCartButtonProps {
   product: {
@@ -52,6 +53,13 @@ export function AddToCartButton({
     }
 
     addItem({ ...product, quantity });
+    analytics.addToCart({
+      item_id: product.id,
+      item_name: product.title,
+      item_variant: product.variantName,
+      price: product.price,
+      quantity,
+    });
     toast.success(
       `${quantity}x ${product.title} ${product.variantName ? `(${product.variantName})` : ""} añadido al carrito.`,
     );

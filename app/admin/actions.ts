@@ -8,7 +8,7 @@ import {
   profiles,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,8 +18,8 @@ export async function deleteProductAction(productId: string) {
   try {
     await db.delete(products).where(eq(products.id, productId));
     revalidatePath("/admin/productos");
-    revalidateTag("products");
-    revalidateTag("categories");
+    updateTag("products");
+    updateTag("categories");
     return { success: true };
   } catch (err) {
     console.error("deleteProductAction error:", err);
@@ -68,8 +68,8 @@ export async function createProductAction(data: {
 
     revalidatePath("/admin/productos");
     revalidatePath("/productos");
-    revalidateTag("products");
-    revalidateTag("categories");
+    updateTag("products");
+    updateTag("categories");
   } catch (err: any) {
     console.error("createProductAction error:", err);
     return { error: err?.message || "Error al crear el producto." };
@@ -162,9 +162,9 @@ export async function updateProductAction(
     revalidatePath("/admin/productos");
     revalidatePath("/productos");
     revalidatePath(`/productos/${data.slug}`);
-    revalidateTag("products");
-    revalidateTag(`product:${data.slug}`);
-    revalidateTag(`product:${productId}`);
+    updateTag("products");
+    updateTag(`product:${data.slug}`);
+    updateTag(`product:${productId}`);
   } catch (err: any) {
     console.error("updateProductAction error:", err);
     return { error: err?.message || "Error al actualizar el producto." };

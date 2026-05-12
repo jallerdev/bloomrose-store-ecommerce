@@ -1,10 +1,19 @@
 import { Resend } from "resend";
 import { db } from "@/lib/db";
-import { orders, orderItems, profiles, productVariants, products, productImages } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  orders,
+  orderItems,
+  profiles,
+  productVariants,
+  products,
+  productImages,
+  stockNotifications,
+} from "@/lib/db/schema";
+import { and, eq, isNull } from "drizzle-orm";
 import { OrderPaidEmail } from "./templates/OrderPaid";
 import { OrderShippedEmail } from "./templates/OrderShipped";
 import { WelcomeEmail } from "./templates/Welcome";
+import { BackInStockEmail } from "./templates/BackInStock";
 
 let resendClient: Resend | null = null;
 function getResend(): Resend | null {
@@ -141,6 +150,11 @@ export async function sendOrderPaidEmail(args: { orderId: string }) {
       })),
       subtotal: fmt(Number(order.subtotal)),
       shippingCost: fmt(Number(order.shippingCost)),
+      giftWrapCost:
+        Number(order.giftWrapCost) > 0
+          ? fmt(Number(order.giftWrapCost))
+          : null,
+      giftMessage: order.giftMessage,
       total: fmt(Number(order.totalAmount)),
       shippingAddress: {
         line1: order.shippingAddressLine1 || "",
@@ -194,4 +208,70 @@ export async function sendOrderShippedEmail(args: { orderId: string }) {
       carrier: order.shippingCarrier,
     }),
   });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// "Avísame cuando llegue" — envía a todos los suscriptores pendientes
+// del producto y los marca como notificados.
+// ─────────────────────────────────────────────────────────────────
+
+export async function notifyBackInStock(productId: string) {
+  const pending = await db
+    .select()
+    .from(stockNotifications)
+    .where(
+      and(
+        eq(stockNotifications.productId, productId),
+        isNull(stockNotifications.notifiedAt),
+      ),
+    );
+  if (pending.length === 0) return { sent: 0 };
+
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+  if (!product) return { sent: 0 };
+
+  const [firstImage] = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, productId))
+    .orderBy(productImages.displayOrder)
+    .limit(1);
+
+  const productUrl = `${SITE}/productos/${product.slug}`;
+  const productImage = firstImage?.url
+    ? firstImage.url.startsWith("http")
+      ? firstImage.url
+      : `${SITE}${firstImage.url}`
+    : null;
+
+  let sent = 0;
+  for (const sub of pending) {
+    try {
+      await send({
+        to: sub.email,
+        subject: `${product.title} ya está disponible`,
+        react: BackInStockEmail({
+          productTitle: product.title,
+          productImage,
+          productUrl,
+        }),
+      });
+      await db
+        .update(stockNotifications)
+        .set({ notifiedAt: new Date() })
+        .where(eq(stockNotifications.id, sub.id));
+      sent++;
+    } catch (err) {
+      console.error(
+        "[notifyBackInStock] error enviando aviso",
+        sub.id,
+        err,
+      );
+    }
+  }
+  return { sent };
 }

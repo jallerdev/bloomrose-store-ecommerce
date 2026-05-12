@@ -137,6 +137,9 @@ export default async function HomePage() {
         originalPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
         material: v.name ?? undefined,
         stock: totalStock,
+        defaultVariantId: v.id,
+        defaultVariantName: v.name ?? undefined,
+        defaultVariantStock: v.stock,
         variantCount: p.variants.length,
         image: p.images[0]?.url ?? "",
         badge,
@@ -285,12 +288,14 @@ export default async function HomePage() {
             />
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-secondary shadow-xl shadow-primary/10">
               <Image
-                src="/images/product-necklace.jpg"
+                src="/images/product-necklace.webp"
                 alt="Collar artesanal Bloomrose"
                 fill
                 className="object-cover"
-                sizes="(max-width: 1024px) 80vw, 400px"
+                sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 400px"
+                quality={70}
                 priority
+                fetchPriority="high"
               />
             </div>
 
@@ -371,6 +376,9 @@ export default async function HomePage() {
                 <ProductCard
                   key={p.id}
                   productId={p.id}
+                  defaultVariantId={p.defaultVariantId}
+                  defaultVariantName={p.defaultVariantName}
+                  defaultVariantStock={p.defaultVariantStock}
                   slug={p.slug}
                   name={p.title}
                   category={p.category}
@@ -553,13 +561,13 @@ export default async function HomePage() {
             <div className="col-span-2 sm:col-span-1">
               <div className="flex items-center gap-2.5">
                 <Image
-                  src="/images/image.png"
+                  src="/images/image.webp"
                   alt=""
                   width={32}
                   height={32}
                   className="rounded-full"
                 />
-                <span className="font-serif text-base text-foreground">
+                <span className="font-brand text-2xl leading-none text-foreground">
                   Bloomrose
                 </span>
               </div>

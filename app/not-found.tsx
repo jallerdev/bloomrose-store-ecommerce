@@ -23,7 +23,7 @@ export default function NotFound() {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
           <Flower2 className="h-5 w-5 text-primary-foreground" />
         </div>
-        <span className="font-serif text-xl text-foreground">Bloomrose</span>
+        <span className="font-brand text-3xl leading-none text-foreground">Bloomrose</span>
       </Link>
 
       {/* Big 404 */}

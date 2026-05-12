@@ -1,12 +1,15 @@
 {
-  "name": "my-project",
+  "name": "bloomrose-ecommerce",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "prepare": "git config core.hooksPath .husky 2>/dev/null || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
@@ -69,6 +72,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^22",
     "@types/react": "^19",

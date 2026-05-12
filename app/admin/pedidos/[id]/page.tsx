@@ -167,11 +167,31 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 <span className="text-muted-foreground">Envío</span>
                 <span>{fmt(Number(order.shippingCost))}</span>
               </div>
+              {Number(order.giftWrapCost) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Empaque de regalo
+                  </span>
+                  <span>{fmt(Number(order.giftWrapCost))}</span>
+                </div>
+              )}
               <div className="flex justify-between text-base font-medium">
                 <span>Total</span>
                 <span>{fmt(Number(order.totalAmount))}</span>
               </div>
             </div>
+            {order.giftWrap && (
+              <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+                <p className="font-medium text-foreground">
+                  🎁 Pedido para regalo
+                </p>
+                {order.giftMessage && (
+                  <p className="mt-1 italic text-muted-foreground">
+                    “{order.giftMessage}”
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Cliente + envío */}

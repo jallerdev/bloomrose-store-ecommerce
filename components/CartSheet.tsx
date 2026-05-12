@@ -9,7 +9,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingBag, Trash2, Plus, Minus, Truck } from "lucide-react";
+import { FREE_SHIPPING_THRESHOLD_COP } from "@/lib/shipping";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -155,9 +156,10 @@ export function CartSheet() {
             </div>
 
             <div className="border-t border-border pt-6 pb-2">
-              <div className="flex items-center justify-between text-base font-medium text-foreground">
+              <FreeShippingMeter subtotal={getTotalPrice()} />
+              <div className="mt-4 flex items-center justify-between text-base font-medium text-foreground">
                 <p>Subtotal ({totalItems} items)</p>
-                <p>${getTotalPrice().toLocaleString("es-MX")}</p>
+                <p>${getTotalPrice().toLocaleString("es-CO")}</p>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Los impuestos y gastos de envío se calculan en la pantalla de
@@ -176,5 +178,50 @@ export function CartSheet() {
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function FreeShippingMeter({ subtotal }: { subtotal: number }) {
+  const threshold = FREE_SHIPPING_THRESHOLD_COP;
+  const remaining = Math.max(0, threshold - subtotal);
+  const progress = Math.min(100, Math.round((subtotal / threshold) * 100));
+  const unlocked = remaining === 0;
+
+  return (
+    <div
+      className={`rounded-xl border p-3 ${
+        unlocked
+          ? "border-primary/30 bg-primary/5"
+          : "border-border bg-secondary/30"
+      }`}
+    >
+      <div className="flex items-center gap-2 text-xs">
+        <Truck
+          className={`h-4 w-4 shrink-0 ${
+            unlocked ? "text-primary" : "text-muted-foreground"
+          }`}
+        />
+        {unlocked ? (
+          <p className="font-medium text-primary">
+            ¡Felicidades! Tienes envío gratis 🎉
+          </p>
+        ) : (
+          <p className="text-foreground">
+            Te faltan{" "}
+            <span className="font-semibold">
+              ${remaining.toLocaleString("es-CO")}
+            </span>{" "}
+            para envío gratis
+          </p>
+        )}
+      </div>
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500"
+          style={{ width: `${progress}%` }}
+          aria-hidden="true"
+        />
+      </div>
+    </div>
   );
 }

@@ -172,9 +172,31 @@ export const orders = pgTable("orders", {
   paymentId: varchar("payment_id", { length: 255 }),
   paymentReference: varchar("payment_reference", { length: 255 }).unique(),
 
+  // Empaque de regalo
+  giftWrap: boolean("gift_wrap").default(false).notNull(),
+  giftWrapCost: decimal("gift_wrap_cost", { precision: 10, scale: 2 })
+    .default("0")
+    .notNull(),
+  giftMessage: text("gift_message"),
+
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Avisos de "Avísame cuando llegue" — la suscripción es por producto
+// (no por variante) porque el admin recrea variantes al editar.
+export const stockNotifications = pgTable("stock_notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  profileId: uuid("profile_id").references(() => profiles.id, {
+    onDelete: "set null",
+  }),
+  email: varchar("email", { length: 255 }).notNull(),
+  notifiedAt: timestamp("notified_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const orderItems = pgTable("order_items", {

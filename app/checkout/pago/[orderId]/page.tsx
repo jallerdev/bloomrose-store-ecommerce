@@ -2,12 +2,19 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { orders, profiles } from "@/lib/db/schema";
+import {
+  orders,
+  orderItems,
+  productVariants,
+  products,
+  profiles,
+} from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { StoreHeader } from "@/components/StoreHeader";
 import { Button } from "@/components/ui/button";
 import { Lock, ExternalLink, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { buildCheckoutUrl } from "@/lib/wompi";
+import { PurchaseTracker } from "@/components/PurchaseTracker";
 
 export const metadata = { title: "Pago · Bloomrose" };
 export const dynamic = "force-dynamic";
@@ -62,6 +69,25 @@ export default async function PagoPage({ params }: Props) {
 
   // Si ya está pagado, mostramos confirmación en lugar del botón de pago.
   const alreadyPaid = order.status !== "PENDING" && order.status !== "CANCELLED";
+
+  // Para tracking de compra (GA4 / Meta Pixel) cargamos los items sólo cuando se pagó.
+  const purchaseItems = alreadyPaid
+    ? await db
+        .select({
+          id: orderItems.productVariantId,
+          name: products.title,
+          variantName: productVariants.name,
+          price: orderItems.priceAtPurchase,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .innerJoin(
+          productVariants,
+          eq(orderItems.productVariantId, productVariants.id),
+        )
+        .innerJoin(products, eq(productVariants.productId, products.id))
+        .where(eq(orderItems.orderId, order.id))
+    : [];
 
   // Construir URL de Wompi. Si faltan credenciales, mostramos un fallback.
   let checkoutUrl: string | null = null;
@@ -130,6 +156,19 @@ export default async function PagoPage({ params }: Props) {
                 <p className="text-xs text-muted-foreground">
                   Ya estamos preparando tu pedido con cariño.
                 </p>
+                <PurchaseTracker
+                  transactionId={order.paymentReference ?? order.id}
+                  value={Number(order.totalAmount)}
+                  shipping={Number(order.shippingCost)}
+                  coupon={order.couponCode ?? undefined}
+                  items={purchaseItems.map((i) => ({
+                    item_id: i.id,
+                    item_name: i.name,
+                    item_variant: i.variantName ?? undefined,
+                    price: Number(i.price),
+                    quantity: i.quantity,
+                  }))}
+                />
               </div>
             ) : configError ? (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-8 text-center">

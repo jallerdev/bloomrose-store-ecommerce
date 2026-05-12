@@ -1,14 +1,24 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
-import { FloatingContact } from "@/components/FloatingContact";
+import { DM_Sans, Playfair_Display, Sacramento } from "next/font/google";
+import { DeferredWidgets } from "@/components/DeferredWidgets";
 import "./globals.css";
 
-const _dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-inter" });
-const _playfair = Playfair_Display({
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+  display: "swap",
+});
+const brand = Sacramento({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-brand",
+  display: "swap",
 });
 
 const SITE_URL =
@@ -41,8 +51,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: "/images/image.png",
-    apple: "/images/image.png",
+    icon: "/images/image.webp",
+    apple: "/images/image.webp",
   },
   openGraph: {
     type: "website",
@@ -51,20 +61,11 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} · Bisutería artesanal`,
     description: DEFAULT_DESCRIPTION,
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: SITE_NAME,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} · Bisutería artesanal`,
     description: DEFAULT_DESCRIPTION,
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -89,7 +90,7 @@ const organizationJsonLd = {
   name: SITE_NAME,
   alternateName: "Bloomrose",
   url: SITE_URL,
-  logo: `${SITE_URL}/images/image.png`,
+  logo: `${SITE_URL}/images/image.webp`,
   description: DEFAULT_DESCRIPTION,
   contactPoint: {
     "@type": "ContactPoint",
@@ -125,11 +126,13 @@ export default function RootLayout({
   const chatEnabled = Boolean(process.env.ANTHROPIC_API_KEY);
 
   return (
-    <html lang="es-CO">
+    <html
+      lang="es-CO"
+      className={`${dmSans.variable} ${playfair.variable} ${brand.variable}`}
+    >
       <body className="font-sans antialiased">
         {children}
-        <Toaster />
-        <FloatingContact
+        <DeferredWidgets
           whatsappNumber={whatsappNumber}
           chatEnabled={chatEnabled}
         />

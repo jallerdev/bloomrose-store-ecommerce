@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
@@ -45,8 +45,8 @@ export async function submitReviewAction(input: SubmitReviewInput) {
       });
 
     revalidatePath(`/productos/${parsed.data.productSlug}`);
-    revalidateTag("reviews");
-    revalidateTag(`product:${parsed.data.productSlug}`);
+    updateTag("reviews");
+    updateTag(`product:${parsed.data.productSlug}`);
     return { ok: true } as const;
   } catch (err) {
     console.error("[submitReviewAction]", err);

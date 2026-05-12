@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 
 export interface FilterFacets {
   categories: { slug: string; name: string }[];
@@ -23,6 +25,14 @@ export interface FilterFacets {
   /** Rango global de precios en COP (min y max enteros). */
   priceRange: { min: number; max: number };
 }
+
+export const SORT_OPTIONS = [
+  { value: "relevance", label: "Más relevantes" },
+  { value: "newest", label: "Novedades" },
+  { value: "price_asc", label: "Precio: menor a mayor" },
+  { value: "price_desc", label: "Precio: mayor a menor" },
+  { value: "name_asc", label: "Nombre: A → Z" },
+] as const;
 
 interface Props {
   facets: FilterFacets;
@@ -42,20 +52,30 @@ export function ProductFilters({ facets }: Props) {
   const currentSearch = searchParams.get("q") ?? "";
   const currentCategory = searchParams.get("category") ?? "";
   const currentMaterial = searchParams.get("material") ?? "";
+  const currentMinPrice = Number(
+    searchParams.get("minPrice") ?? facets.priceRange.min,
+  );
   const currentMaxPrice = Number(
     searchParams.get("maxPrice") ?? facets.priceRange.max,
   );
+  const currentOnSale = searchParams.get("onSale") === "1";
+  const currentInStock = searchParams.get("inStock") === "1";
+  const currentIsNew = searchParams.get("isNew") === "1";
+  const currentSort = searchParams.get("sort") ?? "relevance";
 
   const [searchInput, setSearchInput] = useState(currentSearch);
-  const [price, setPrice] = useState([currentMaxPrice]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    currentMinPrice,
+    currentMaxPrice,
+  ]);
 
   // Mantener los inputs sincronizados si cambian externamente (back/forward)
   useEffect(() => {
     setSearchInput(currentSearch);
   }, [currentSearch]);
   useEffect(() => {
-    setPrice([currentMaxPrice]);
-  }, [currentMaxPrice]);
+    setPriceRange([currentMinPrice, currentMaxPrice]);
+  }, [currentMinPrice, currentMaxPrice]);
 
   const buildHref = useCallback(
     (mutations: Record<string, string | undefined>) => {
@@ -77,9 +97,9 @@ export function ProductFilters({ facets }: Props) {
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput === currentSearch) return;
-      router.replace(buildHref({ q: searchInput.trim() || undefined }), {
-        scroll: false,
-      });
+      const q = searchInput.trim();
+      if (q) analytics.search(q);
+      router.replace(buildHref({ q: q || undefined }), { scroll: false });
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,15 +112,29 @@ export function ProductFilters({ facets }: Props) {
     router.push(buildHref({ material: value }), { scroll: false });
   };
   const handlePriceCommit = (value: number[]) => {
-    setPrice(value);
-    const v =
-      value[0] >= facets.priceRange.max ? undefined : String(value[0]);
-    router.push(buildHref({ maxPrice: v }), { scroll: false });
+    const [min, max] = value;
+    setPriceRange([min, max]);
+    router.push(
+      buildHref({
+        minPrice: min <= facets.priceRange.min ? undefined : String(min),
+        maxPrice: max >= facets.priceRange.max ? undefined : String(max),
+      }),
+      { scroll: false },
+    );
+  };
+  const toggleParam = (key: string, on: boolean) => {
+    router.push(buildHref({ [key]: on ? "1" : undefined }), { scroll: false });
+  };
+  const handleSort = (value: string) => {
+    router.push(
+      buildHref({ sort: value === "relevance" ? undefined : value }),
+      { scroll: false },
+    );
   };
 
   const clearFilters = () => {
     setSearchInput("");
-    setPrice([facets.priceRange.max]);
+    setPriceRange([facets.priceRange.min, facets.priceRange.max]);
     router.push("/productos", { scroll: false });
   };
 
@@ -108,7 +142,17 @@ export function ProductFilters({ facets }: Props) {
     searchParams.has("q") ||
     searchParams.has("category") ||
     searchParams.has("material") ||
-    searchParams.has("maxPrice");
+    searchParams.has("minPrice") ||
+    searchParams.has("maxPrice") ||
+    searchParams.has("onSale") ||
+    searchParams.has("inStock") ||
+    searchParams.has("isNew") ||
+    searchParams.has("sort");
+
+  const sliderStep = Math.max(
+    1000,
+    Math.round((facets.priceRange.max - facets.priceRange.min) / 50),
+  );
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -132,6 +176,25 @@ export function ProductFilters({ facets }: Props) {
       <Separator className="my-4" />
 
       <div className="flex flex-col gap-6">
+        {/* Ordenar */}
+        <div className="flex flex-col gap-2">
+          <Label className="text-sm font-medium text-foreground">Ordenar</Label>
+          <Select value={currentSort} onValueChange={handleSort}>
+            <SelectTrigger className="rounded-lg">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Separator />
+
         {/* Búsqueda */}
         <div className="flex flex-col gap-2">
           <Label className="text-sm font-medium text-foreground">Buscar</Label>
@@ -154,6 +217,28 @@ export function ProductFilters({ facets }: Props) {
               </button>
             )}
           </div>
+        </div>
+
+        <Separator />
+
+        {/* Toggles rápidos */}
+        <div className="flex flex-col gap-3">
+          <ToggleRow
+            label="Solo en oferta"
+            checked={currentOnSale}
+            onChange={(v) => toggleParam("onSale", v)}
+          />
+          <ToggleRow
+            label="Solo con stock"
+            checked={currentInStock}
+            onChange={(v) => toggleParam("inStock", v)}
+          />
+          <ToggleRow
+            label="Solo novedades"
+            description="Agregados en los últimos 30 días"
+            checked={currentIsNew}
+            onChange={(v) => toggleParam("isNew", v)}
+          />
         </div>
 
         <Separator />
@@ -213,31 +298,35 @@ export function ProductFilters({ facets }: Props) {
           </>
         )}
 
-        {/* Precio */}
+        {/* Rango de precio */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium text-foreground">
-              Precio máximo
+              Rango de precio
             </Label>
-            <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">
-              {fmtCOP(price[0] ?? facets.priceRange.max)}
+          </div>
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="rounded-md bg-secondary px-2 py-1 font-semibold text-secondary-foreground">
+              {fmtCOP(priceRange[0])}
+            </span>
+            <span className="text-muted-foreground">—</span>
+            <span className="rounded-md bg-secondary px-2 py-1 font-semibold text-secondary-foreground">
+              {fmtCOP(priceRange[1])}
             </span>
           </div>
           <Slider
-            value={price}
-            onValueChange={setPrice}
+            value={priceRange}
+            onValueChange={(v) => setPriceRange([v[0], v[1]])}
             onValueCommit={handlePriceCommit}
             min={facets.priceRange.min}
             max={facets.priceRange.max}
-            step={Math.max(
-              1000,
-              Math.round((facets.priceRange.max - facets.priceRange.min) / 50),
-            )}
+            step={sliderStep}
+            minStepsBetweenThumbs={1}
             className="py-2"
           />
           <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>{fmtCOP(facets.priceRange.min)}</span>
-            <span>{fmtCOP(facets.priceRange.max)}+</span>
+            <span>{fmtCOP(facets.priceRange.max)}</span>
           </div>
         </div>
       </div>
@@ -267,5 +356,31 @@ function CategoryChip({
     >
       {label}
     </button>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start justify-between gap-3">
+      <div className="flex flex-col">
+        <span className="text-sm font-medium text-foreground">{label}</span>
+        {description && (
+          <span className="text-[11px] text-muted-foreground">
+            {description}
+          </span>
+        )}
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </label>
   );
 }

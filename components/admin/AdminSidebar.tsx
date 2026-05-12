@@ -92,7 +92,7 @@ function SidebarBody({
           </div>
           {!collapsed && (
             <div>
-              <p className="font-serif text-sm font-semibold text-foreground">
+              <p className="font-brand text-xl leading-none text-foreground">
                 Bloomrose
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">

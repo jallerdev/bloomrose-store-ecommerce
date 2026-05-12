@@ -8,9 +8,19 @@ instrumentation-client.ts
 # Common ignores
 node_modules/
 .next/
-.env*.local
-.DS_Store.env.local
+.env
+.env.*
+!.env.local.example
+.DS_Store
 
 # Build artifacts
 tsconfig.tsbuildinfo
 next-env.d.ts
+
+# Local Netlify folder
+.netlify
+
+# Playwright
+playwright-report/
+test-results/
+.playwright-cache/

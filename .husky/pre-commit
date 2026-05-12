@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Pre-commit hook — verifica que el schema de Drizzle esté sincronizado con
+# las migraciones antes de permitir el commit.
+#
+# Por qué: tocar lib/db/schema.ts sin generar/aplicar la migración deja la
+# DB de Supabase desincronizada y rompe queries en runtime (`column does
+# not exist`). Este hook bloquea ese caso.
+#
+# Para saltarlo intencionalmente: git commit --no-verify
+
+set -e
+
+# Solo nos importa si lib/db/schema.ts está en los archivos staged.
+if ! git diff --cached --name-only | grep -qE "^lib/db/schema\.ts$"; then
+  exit 0
+fi
+
+echo "▶ schema.ts cambió — verificando que las migraciones estén al día…"
+
+# Ejecuta drizzle-kit generate en modo "check": si el schema difiere de las
+# migraciones, drizzle crea un archivo nuevo. Si no hay diff, no hace nada.
+#
+# Snapshot los archivos de migración antes/después para detectar si se
+# generó uno nuevo. Si sí, abortamos el commit para que el usuario lo
+# revise y lo incluya.
+BEFORE=$(ls supabase/migrations/*.sql 2>/dev/null | wc -l)
+
+# `generate` falla si hay conflictos; capturamos salida para mostrarla
+if ! GENERATE_OUT=$(pnpm drizzle-kit generate 2>&1); then
+  echo "✗ drizzle-kit generate falló:"
+  echo "$GENERATE_OUT"
+  exit 1
+fi
+
+AFTER=$(ls supabase/migrations/*.sql 2>/dev/null | wc -l)
+
+if [ "$AFTER" -gt "$BEFORE" ]; then
+  NEW_MIGRATION=$(ls -t supabase/migrations/*.sql | head -1)
+  echo ""
+  echo "✗ Se generó una migración nueva: $NEW_MIGRATION"
+  echo ""
+  echo "  El schema cambió pero no hay migración. Revisa el archivo,"
+  echo "  inclúyelo en el commit y luego aplícalo con:"
+  echo ""
+  echo "    pnpm drizzle-kit push   # aplica a la DB"
+  echo "    git add $NEW_MIGRATION"
+  echo "    git commit              # vuelve a intentar"
+  echo ""
+  exit 1
+fi
+
+echo "✓ Schema en sync con migraciones."

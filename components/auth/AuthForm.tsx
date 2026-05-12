@@ -30,6 +30,7 @@ import {
   type SignupInput,
 } from "@/lib/validation/auth";
 import { PasswordStrength } from "@/components/auth/PasswordStrength";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 export function AuthForm() {
   const searchParams = useSearchParams();
@@ -39,7 +40,7 @@ export function AuthForm() {
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="space-y-2 text-center">
-        <h1 className="font-serif text-3xl text-primary">Bloomrose</h1>
+        <h1 className="font-brand text-5xl text-primary">Bloomrose</h1>
         <p className="text-sm text-muted-foreground">
           Únete a nuestra exclusiva colección
         </p>
@@ -103,6 +104,7 @@ function LoginForm({ returnTo }: { returnTo: string }) {
       onSubmit={handleSubmit(onSubmit)}
       className="mt-4 space-y-4 rounded-xl border bg-card p-6 shadow-sm"
     >
+      <OAuthButtons returnTo={returnTo} />
       <div className="space-y-2">
         <Label htmlFor="email-login">Correo electrónico</Label>
         <div className="relative">
@@ -224,6 +226,7 @@ function SignupForm({ returnTo }: { returnTo: string }) {
       onSubmit={handleSubmit(onSubmit)}
       className="mt-4 space-y-4 rounded-xl border bg-card p-6 shadow-sm"
     >
+      <OAuthButtons returnTo={returnTo} />
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="firstName">Nombre</Label>

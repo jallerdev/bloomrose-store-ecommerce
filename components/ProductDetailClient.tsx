@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Minus,
   Plus,
@@ -20,6 +20,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { WishlistButton } from "@/components/WishlistButton";
+import { NotifyWhenInStock } from "@/components/NotifyWhenInStock";
+import { analytics } from "@/lib/analytics";
 
 export interface VariantDTO {
   id: string;
@@ -51,6 +53,17 @@ const LOW_STOCK = 5;
 export function ProductDetailClient({ product, variants }: Props) {
   const [selected, setSelected] = useState<VariantDTO>(variants[0]);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    analytics.viewItem({
+      item_id: product.id,
+      item_name: product.title,
+      item_variant: variants[0]?.name ?? undefined,
+      price: Number(variants[0]?.price ?? 0),
+    });
+    // Sólo al montar (vista de PDP). No queremos disparar al cambiar variante.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   const price = Number(selected.price);
   const compareAt = selected.compareAtPrice
@@ -217,7 +230,12 @@ export function ProductDetailClient({ product, variants }: Props) {
           className="h-12 flex-1 rounded-xl bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 disabled:opacity-50"
         />
 
-        <WishlistButton productId={product.id} variant="lg" />
+        <WishlistButton
+          productId={product.id}
+          productName={product.title}
+          productPrice={price}
+          variant="lg"
+        />
 
         <Button
           type="button"
@@ -230,6 +248,13 @@ export function ProductDetailClient({ product, variants }: Props) {
           <Share2 className="h-5 w-5 text-muted-foreground" />
         </Button>
       </div>
+
+      {isOutOfStock && (
+        <NotifyWhenInStock
+          productId={product.id}
+          className="w-full rounded-xl"
+        />
+      )}
 
       <Separator />
 

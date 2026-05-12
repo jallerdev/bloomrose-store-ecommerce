@@ -344,6 +344,9 @@ export default async function ProductPage({
                   <ProductCard
                     key={p.id}
                     productId={p.id}
+                    defaultVariantId={v.id}
+                    defaultVariantName={v.name ?? undefined}
+                    defaultVariantStock={v.stock}
                     name={p.title}
                     slug={p.slug}
                     category={product.category?.name ?? "Accesorio"}

@@ -19,6 +19,9 @@ interface ProductLite {
   stock: number;
   variantCount: number;
   image: string;
+  defaultVariantId?: string;
+  defaultVariantName?: string;
+  defaultVariantStock?: number;
 }
 
 interface Props {
@@ -75,6 +78,9 @@ export function FavoritesClient({ products }: Props) {
           <ProductCard
             key={p.id}
             productId={p.id}
+            defaultVariantId={p.defaultVariantId}
+            defaultVariantName={p.defaultVariantName}
+            defaultVariantStock={p.defaultVariantStock}
             slug={p.slug}
             name={p.title}
             category={p.category}

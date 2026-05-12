@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Menu, X, User, Settings, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, Settings, LogOut, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { useWishlistStore } from "@/lib/store/wishlist";
 import { CartSheet } from "@/components/CartSheet";
 import { WishlistHeaderButton } from "@/components/WishlistHeaderButton";
+import { SearchDialog } from "@/components/SearchDialog";
 
 const navItems = [
   { label: "Tienda", href: "/productos" },
@@ -55,8 +56,10 @@ export function StoreHeaderClient({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center text-foreground sm:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:hidden"
             aria-label={mobileMenuOpen ? "Cerrar menu" : "Abrir menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -72,13 +75,13 @@ export function StoreHeaderClient({
             aria-label="Bloomrose Accesorios - Inicio"
           >
             <Image
-              src="/images/image.png"
+              src="/images/image.webp"
               alt=""
               width={36}
               height={36}
               className="rounded-full sm:h-10 sm:w-10"
             />
-            <span className="hidden font-serif text-lg tracking-tight text-foreground sm:inline-block sm:text-xl">
+            <span className="hidden font-brand text-2xl leading-none tracking-tight text-foreground sm:inline-block sm:text-3xl">
               Bloomrose
             </span>
           </Link>
@@ -197,13 +200,7 @@ export function StoreHeaderClient({
             </Link>
           )}
 
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary"
-            aria-label="Buscar"
-          >
-            <Search className="h-[18px] w-[18px]" />
-          </button>
+          <SearchDialog />
           <WishlistHeaderButton />
           <CartSheet />
         </div>
@@ -215,7 +212,7 @@ export function StoreHeaderClient({
           mobileMenuOpen ? "max-h-60" : "max-h-0 border-t-0",
         )}
       >
-        <nav aria-label="Menu movil" className="px-4 py-4">
+        <nav id="mobile-nav" aria-label="Menu movil" className="px-4 py-4">
           <ul className="flex flex-col gap-4">
             {navItems.map((item) => (
               <li key={item.label}>

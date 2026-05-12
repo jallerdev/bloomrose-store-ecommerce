@@ -47,7 +47,7 @@ export default function NosotrosPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
-            Sobre <span className="text-primary">Bloomrose</span>
+            Sobre <span className="font-brand text-primary text-4xl sm:text-5xl lg:text-6xl">Bloomrose</span>
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
             Accesorios artesanales que cuentan historias y celebran la
@@ -63,7 +63,7 @@ export default function NosotrosPage() {
             {/* Image */}
             <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-2xl bg-secondary lg:max-w-md">
               <Image
-                src="/images/product-necklace.jpg"
+                src="/images/product-necklace.webp"
                 alt="Artesana creando accesorios Bloomrose"
                 fill
                 className="object-cover"

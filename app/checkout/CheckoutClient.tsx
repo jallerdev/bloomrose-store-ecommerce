@@ -19,7 +19,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { createPendingOrderAction } from "./actions";
 import { checkCouponAction } from "./coupon-actions";
 import { estimateShippingCost } from "@/lib/shipping";
-import { Tag, X as XIcon } from "lucide-react";
+import { analytics } from "@/lib/analytics";
+import { Tag, X as XIcon, Gift } from "lucide-react";
+import { GIFT_WRAP_COST, GIFT_MESSAGE_MAX } from "@/lib/checkout/gift-wrap";
 
 interface AddressDTO {
   id: string;
@@ -53,6 +55,21 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   const { items, getTotalPrice, clearCart } = useCartStore();
   useEffect(() => setMounted(true), []);
 
+  useEffect(() => {
+    if (!mounted || items.length === 0) return;
+    analytics.beginCheckout(
+      items.map((i) => ({
+        item_id: i.id,
+        item_name: i.title,
+        item_variant: i.variantName,
+        price: i.price,
+        quantity: i.quantity,
+      })),
+    );
+    // Disparar una sola vez cuando el carrito está hidratado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
+
   const hasSavedAddresses = addresses.length > 0;
   const defaultAddressId =
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? "";
@@ -79,6 +96,10 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   });
   const [notes, setNotes] = useState("");
 
+  // Empaque de regalo
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftMessage, setGiftMessage] = useState("");
+
   // Cupón
   const [couponInput, setCouponInput] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
@@ -100,7 +121,8 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
     : 0;
   const shippingCost = appliedCoupon?.freeShipping ? 0 : baseShippingCost;
   const discount = appliedCoupon?.discountAmount ?? 0;
-  const total = Math.max(0, subtotal - discount + shippingCost);
+  const giftWrapCost = giftWrap ? GIFT_WRAP_COST : 0;
+  const total = Math.max(0, subtotal - discount + shippingCost + giftWrapCost);
 
   if (!mounted) {
     return (
@@ -190,6 +212,8 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
         contactPhone,
         contactEmail: contactEmail.trim() || undefined,
         couponCode: appliedCoupon?.code ?? null,
+        giftWrap,
+        giftMessage: giftWrap ? giftMessage.trim() || null : null,
         notes: notes || null,
       });
 
@@ -405,6 +429,49 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
           )}
         </section>
 
+        {/* Empaque de regalo */}
+        <section className="rounded-xl border border-border bg-card p-4">
+          <label className="flex cursor-pointer items-start gap-3">
+            <Checkbox
+              checked={giftWrap}
+              onCheckedChange={(v) => setGiftWrap(v === true)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Gift className="h-4 w-4 text-primary" />
+                Es un regalo
+                <span className="ml-auto text-xs font-normal text-muted-foreground">
+                  +{fmt(GIFT_WRAP_COST)}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Lo empacamos en una caja con cinta y agregamos tu mensaje
+                personalizado.
+              </p>
+            </div>
+          </label>
+          {giftWrap && (
+            <div className="mt-3">
+              <Label className="text-xs text-muted-foreground">
+                Mensaje (opcional)
+              </Label>
+              <Textarea
+                className="mt-1 border-border bg-background text-sm"
+                rows={3}
+                value={giftMessage}
+                onChange={(e) =>
+                  setGiftMessage(e.target.value.slice(0, GIFT_MESSAGE_MAX))
+                }
+                placeholder="Ej. Felicitaciones, con mucho cariño…"
+              />
+              <p className="mt-1 text-right text-[11px] text-muted-foreground">
+                {giftMessage.length}/{GIFT_MESSAGE_MAX}
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Notas */}
         <section>
           <Label className="text-xs text-muted-foreground">
@@ -543,6 +610,12 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
                 : "—"}
             </span>
           </div>
+          {giftWrap && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Empaque de regalo</span>
+              <span className="text-foreground">{fmt(giftWrapCost)}</span>
+            </div>
+          )}
           <Separator className="my-2" />
           <div className="flex justify-between text-base font-medium">
             <span>Total</span>

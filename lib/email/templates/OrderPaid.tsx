@@ -25,6 +25,8 @@ interface OrderPaidEmailProps {
   }[];
   subtotal: string;
   shippingCost: string;
+  giftWrapCost?: string | null;
+  giftMessage?: string | null;
   total: string;
   shippingAddress: {
     line1: string;
@@ -41,6 +43,8 @@ export function OrderPaidEmail({
   items,
   subtotal,
   shippingCost,
+  giftWrapCost,
+  giftMessage,
   total,
   shippingAddress,
   orderUrl,
@@ -112,6 +116,16 @@ export function OrderPaidEmail({
                 <Text style={small}>{shippingCost}</Text>
               </Column>
             </Row>
+            {giftWrapCost ? (
+              <Row>
+                <Column>
+                  <Text style={small}>Empaque de regalo</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={small}>{giftWrapCost}</Text>
+                </Column>
+              </Row>
+            ) : null}
             <Row>
               <Column>
                 <Text style={totalText}>Total</Text>
@@ -121,6 +135,18 @@ export function OrderPaidEmail({
               </Column>
             </Row>
           </Section>
+
+          {giftMessage ? (
+            <>
+              <Hr style={hr} />
+              <Heading as="h2" style={h2}>
+                🎁 Tu mensaje de regalo
+              </Heading>
+              <Text style={{ ...paragraph, fontStyle: "italic" }}>
+                “{giftMessage}”
+              </Text>
+            </>
+          ) : null}
 
           <Hr style={hr} />
 
