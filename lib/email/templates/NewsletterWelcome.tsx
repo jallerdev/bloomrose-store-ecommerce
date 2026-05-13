@@ -18,11 +18,13 @@ import {
 interface NewsletterWelcomeProps {
   siteUrl: string;
   shopUrl: string;
+  unsubscribeUrl: string;
 }
 
 export function NewsletterWelcomeEmail({
   siteUrl,
   shopUrl,
+  unsubscribeUrl,
 }: NewsletterWelcomeProps) {
   return (
     <Html>
@@ -100,7 +102,11 @@ export function NewsletterWelcomeEmail({
             </Section>
 
             <Text style={fineprint}>
-              Cero spam, solo lo bueno. Te puedes dar de baja cuando quieras.
+              Cero spam, solo lo bueno.{" "}
+              <Link href={unsubscribeUrl} style={fineprintLink}>
+                Darme de baja
+              </Link>
+              .
             </Text>
           </Section>
 
@@ -127,7 +133,11 @@ export function NewsletterWelcomeEmail({
               <Link href={siteUrl} style={inlineLink}>
                 bloomroseaccesorios.com
               </Link>
-              . Si no fuiste tú, ignora este mensaje — no te enviaremos más.
+              . ¿No quieres más correos?{" "}
+              <Link href={unsubscribeUrl} style={inlineLink}>
+                Darte de baja
+              </Link>
+              .
             </Text>
             <Text style={footerCopy}>
               © {new Date().getFullYear()} Bloom Rose Accesorios · Hecho con
@@ -289,6 +299,11 @@ const fineprint = {
   color: MUTED,
   textAlign: "center" as const,
   margin: "16px 0 0",
+};
+
+const fineprintLink = {
+  color: PRIMARY_DARK,
+  textDecoration: "underline",
 };
 
 // Footer

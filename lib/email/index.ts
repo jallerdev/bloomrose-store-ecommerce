@@ -15,6 +15,7 @@ import { OrderShippedEmail } from "./templates/OrderShipped";
 import { WelcomeEmail } from "./templates/Welcome";
 import { BackInStockEmail } from "./templates/BackInStock";
 import { NewsletterWelcomeEmail } from "./templates/NewsletterWelcome";
+import { buildUnsubscribeUrl } from "@/lib/newsletter/token";
 
 let resendClient: Resend | null = null;
 function getResend(): Resend | null {
@@ -89,6 +90,7 @@ export async function sendNewsletterWelcomeEmail(args: { email: string }) {
     react: NewsletterWelcomeEmail({
       siteUrl: SITE,
       shopUrl: `${SITE}/productos`,
+      unsubscribeUrl: buildUnsubscribeUrl(SITE, args.email),
     }),
   });
 }
