@@ -3,6 +3,7 @@ import {
   Button,
   Column,
   Container,
+  Font,
   Head,
   Heading,
   Hr,
@@ -23,9 +24,44 @@ export function NewsletterWelcomeEmail({
   siteUrl,
   shopUrl,
 }: NewsletterWelcomeProps) {
+  // Las fuentes se cargan desde el sitio público; Gmail web las ignora y
+  // cae al fallback cursivo, pero Apple Mail/Outlook desktop/Yahoo sí
+  // renderizan Brittany Signature y Decalotype.
+  const fontBase = `${siteUrl}/fonts`;
   return (
     <Html>
-      <Head />
+      <Head>
+        <Font
+          fontFamily="BrittanySignature"
+          fallbackFontFamily="cursive"
+          webFont={{
+            url: `${fontBase}/BrittanySignature.ttf`,
+            format: "truetype",
+          }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Decalotype"
+          fallbackFontFamily="Helvetica"
+          webFont={{
+            url: `${fontBase}/decalotype.regular.ttf`,
+            format: "truetype",
+          }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+        <Font
+          fontFamily="Decalotype"
+          fallbackFontFamily="Helvetica"
+          webFont={{
+            url: `${fontBase}/decalotype.bold.ttf`,
+            format: "truetype",
+          }}
+          fontWeight={700}
+          fontStyle="normal"
+        />
+      </Head>
       <Preview>
         Drops privados, lanzamientos antes que nadie y promos solo para
         suscriptoras.
@@ -35,11 +71,11 @@ export function NewsletterWelcomeEmail({
         <Container style={spacer} />
 
         <Container style={container}>
-          {/* ── Header wordmark cursivo ──────────────────────────────
-              Sin <Img> para evitar artefactos de compresión y problemas
-              de carga. La marca se renderiza en cursiva (Brush Script /
-              Snell Roundhand) que es la fuente web-safe más cercana a
-              Sacramento que usa el sitio. */}
+          {/* ── Header wordmark ──────────────────────────────────────
+              Brittany Signature para "Bloom Rose" y Decalotype para
+              "accesorios", igual que en el sitio. Carga vía <Font> en el
+              <Head>. Gmail web ignora @font-face → cae al cursivo
+              genérico; el resto de clientes renderiza las custom. */}
           <Section style={header}>
             <Heading as="h1" style={wordmark}>
               Bloom Rose
@@ -181,10 +217,8 @@ const header = {
 };
 
 const wordmark = {
-  // Fuente cursiva web-safe — la más cercana a Sacramento que se renderiza
-  // de forma consistente en Gmail/Apple Mail/Outlook web.
   fontFamily:
-    "'Brush Script MT', 'Snell Roundhand', 'Lucida Handwriting', cursive",
+    "'BrittanySignature', 'Brush Script MT', 'Snell Roundhand', cursive",
   fontSize: 56,
   fontWeight: 400,
   lineHeight: "60px",
@@ -195,10 +229,8 @@ const wordmark = {
 };
 
 const subWordmark = {
-  // Contraste con la cursiva del wordmark: sans-serif uppercase con
-  // letter-spacing amplio — el patrón clásico de marca premium.
   fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+    "'Decalotype', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
   fontSize: 11,
   fontWeight: 700,
   lineHeight: "14px",
