@@ -32,13 +32,12 @@ export function NewsletterForm({ source = "home" }: { source?: string }) {
           placeholder="tu@email.com"
           aria-label="Tu correo electrónico"
           disabled={pending || state.status === "success"}
-          className="h-12 flex-1 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+          className="h-[60px] flex-1 rounded-2xl border-2 border-foreground/15 bg-card px-5 text-lg text-foreground shadow-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-60 sm:h-12 sm:rounded-xl sm:border sm:border-border sm:bg-background sm:px-4 sm:text-sm sm:shadow-none sm:focus:ring-2 p-3"
         />
         <Button
           type="submit"
-          size="lg"
           disabled={pending || state.status === "success"}
-          className="h-12 rounded-xl bg-foreground px-8 text-sm font-medium text-background hover:bg-foreground/90"
+          className="h-[60px] rounded-2xl bg-foreground px-8 text-lg font-semibold text-background shadow-sm hover:bg-foreground/90 sm:h-12 sm:rounded-xl sm:text-sm sm:font-medium sm:shadow-none"
         >
           {pending ? (
             <Loader2 className="h-4 w-4 animate-spin" />

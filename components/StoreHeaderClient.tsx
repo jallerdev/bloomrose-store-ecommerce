@@ -81,8 +81,13 @@ export function StoreHeaderClient({
               height={36}
               className="rounded-full sm:h-10 sm:w-10"
             />
-            <span className="hidden font-brand text-2xl leading-none tracking-tight text-foreground sm:inline-block sm:text-3xl">
-              Bloom Rose
+            <span className="hidden items-baseline gap-1.5 leading-none text-foreground sm:inline-flex">
+              <span className="font-brand text-2xl tracking-tight">
+                Bloom Rose
+              </span>
+              <span className="font-accent text-[10px] uppercase tracking-[0.2em]">
+                accesorios
+              </span>
             </span>
           </Link>
         </div>

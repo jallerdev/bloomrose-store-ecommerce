@@ -66,6 +66,7 @@ const config: Config = {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
         brand: ['var(--font-brand)', 'cursive'],
+        accent: ['var(--font-accent)', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
         'extra-wide': '0.15em',

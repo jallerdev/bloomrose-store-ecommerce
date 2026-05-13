@@ -85,8 +85,11 @@ export async function sendWelcomeEmail(args: {
 export async function sendNewsletterWelcomeEmail(args: { email: string }) {
   return send({
     to: args.email,
-    subject: "Te uniste a la lista de Bloom Rose",
-    react: NewsletterWelcomeEmail({ shopUrl: `${SITE}/productos` }),
+    subject: "Te damos la bienvenida a Bloom Rose 💌",
+    react: NewsletterWelcomeEmail({
+      siteUrl: SITE,
+      shopUrl: `${SITE}/productos`,
+    }),
   });
 }
 

@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Playfair_Display, Sacramento } from "next/font/google";
+import { DM_Sans, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { DeferredWidgets } from "@/components/DeferredWidgets";
 import { ConditionalFooter } from "@/components/ConditionalFooter";
 import "./globals.css";
@@ -15,10 +16,40 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   display: "swap",
 });
-const brand = Sacramento({
-  subsets: ["latin"],
+
+// Brittany Signature — usada para el wordmark "Bloom Rose"
+const brand = localFont({
+  src: "../public/fonts/BrittanySignature.ttf",
   weight: "400",
   variable: "--font-brand",
+  display: "swap",
+});
+
+// Decalotype — usada para el descriptor "accesorios" y posibles UI accents
+const accent = localFont({
+  src: [
+    {
+      path: "../public/fonts/decalotype.regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/decalotype.medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/decalotype.semibold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/decalotype.bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-accent",
   display: "swap",
 });
 
@@ -129,7 +160,7 @@ export default function RootLayout({
   return (
     <html
       lang="es-CO"
-      className={`${dmSans.variable} ${playfair.variable} ${brand.variable}`}
+      className={`${dmSans.variable} ${playfair.variable} ${brand.variable} ${accent.variable}`}
     >
       <body className="font-sans antialiased">
         {children}

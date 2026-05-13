@@ -16,8 +16,13 @@ export function Footer() {
                 height={32}
                 className="rounded-full"
               />
-              <span className="font-brand text-2xl leading-none text-foreground">
-                Bloom Rose
+              <span className="inline-flex items-baseline gap-1.5 leading-none text-foreground">
+                <span className="font-brand text-2xl tracking-tight">
+                  Bloom Rose
+                </span>
+                <span className="font-accent text-[10px] uppercase tracking-[0.2em]">
+                  Accesorios
+                </span>
               </span>
             </div>
             <p className="mt-3 max-w-xs text-xs text-muted-foreground">
