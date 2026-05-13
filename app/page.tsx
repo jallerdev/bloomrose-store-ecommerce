@@ -42,8 +42,8 @@ const valueProps = [
   },
   {
     icon: RotateCcw,
-    title: "30 días para cambiar",
-    description: "Cambios y devoluciones sin preguntas",
+    title: "Garantía de calidad",
+    description: "Devolución por defectos de fábrica",
   },
   {
     icon: Shield,

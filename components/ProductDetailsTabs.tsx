@@ -111,8 +111,9 @@ export function ProductDetailsTabs({ description, variants, category }: Props) {
               número de guía por correo apenas tu pedido salga de bodega.
             </li>
             <li>
-              <strong className="text-foreground">Devoluciones:</strong> tienes 30
-              días para cambios o devoluciones.
+              <strong className="text-foreground">Devoluciones:</strong> solo
+              por defectos de fábrica. Tienes 5 días desde la entrega para
+              reportarlo. No aceptamos cambios.
             </li>
           </ul>
         </div>

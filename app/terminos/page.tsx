@@ -84,11 +84,13 @@ export default function TerminosPage() {
         tiempos de entrega entre 1 y 5 días hábiles según ciudad.
       </p>
 
-      <h2>6. Cambios y devoluciones</h2>
+      <h2>6. Devoluciones</h2>
       <p>
-        Tienes 30 días desde la entrega para cambios y devoluciones bajo las
-        condiciones detalladas en{" "}
-        <a href="/devoluciones">cambios y devoluciones</a>.
+        Aceptamos devoluciones <strong>únicamente por defectos de fábrica</strong>,
+        reportadas dentro de los 5 días calendario posteriores a la entrega. No
+        realizamos cambios por talla, color, modelo ni por arrepentimiento.
+        Consulta la política completa en{" "}
+        <a href="/devoluciones">devoluciones</a>.
       </p>
 
       <h2>7. Derecho de retracto</h2>

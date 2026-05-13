@@ -71,7 +71,7 @@ export default function ContactoPage() {
           <Link href="/envios">Política de envíos</Link>
         </li>
         <li>
-          <Link href="/devoluciones">Cambios y devoluciones</Link>
+          <Link href="/devoluciones">Política de devoluciones</Link>
         </li>
         <li>
           <Link href="/cuidado-de-joyas">Cómo cuidar tus piezas</Link>

@@ -105,9 +105,10 @@ export default function CuidadoPage() {
       </p>
 
       <p className="mt-8">
-        Cualquier pieza Bloom Rose tiene <strong>6 meses de garantía</strong>{" "}
-        contra defectos de fábrica. Si algo no se siente bien con tu compra,{" "}
-        <a href="/contacto">cuéntanos</a>.
+        Si tu pieza llega con un{" "}
+        <strong>defecto de fábrica</strong>, tienes 5 días desde la entrega para
+        reportarlo y la reemplazamos sin costo. Detalles en{" "}
+        <a href="/devoluciones">devoluciones</a>.
       </p>
     </StaticPageShell>
   );

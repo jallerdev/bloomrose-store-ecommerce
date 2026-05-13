@@ -274,8 +274,8 @@ export function ProductDetailClient({ product, variants }: Props) {
         />
         <TrustPill
           icon={<RotateCcw className="h-4 w-4 text-primary" />}
-          title="30 días de garantía"
-          description="Cambios y devoluciones"
+          title="Garantía de calidad"
+          description="Devolución por defecto de fábrica"
         />
         <TrustPill
           icon={<ShieldCheck className="h-4 w-4 text-primary" />}
