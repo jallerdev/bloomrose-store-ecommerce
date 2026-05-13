@@ -3,11 +3,11 @@ import {
   Button,
   Column,
   Container,
-  Font,
   Head,
   Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Row,
@@ -24,44 +24,9 @@ export function NewsletterWelcomeEmail({
   siteUrl,
   shopUrl,
 }: NewsletterWelcomeProps) {
-  // Las fuentes se cargan desde el sitio público; Gmail web las ignora y
-  // cae al fallback cursivo, pero Apple Mail/Outlook desktop/Yahoo sí
-  // renderizan Brittany Signature y Decalotype.
-  const fontBase = `${siteUrl}/fonts`;
   return (
     <Html>
-      <Head>
-        <Font
-          fontFamily="BrittanySignature"
-          fallbackFontFamily="cursive"
-          webFont={{
-            url: `${fontBase}/BrittanySignature.ttf`,
-            format: "truetype",
-          }}
-          fontWeight={400}
-          fontStyle="normal"
-        />
-        <Font
-          fontFamily="Decalotype"
-          fallbackFontFamily="Helvetica"
-          webFont={{
-            url: `${fontBase}/decalotype.regular.ttf`,
-            format: "truetype",
-          }}
-          fontWeight={400}
-          fontStyle="normal"
-        />
-        <Font
-          fontFamily="Decalotype"
-          fallbackFontFamily="Helvetica"
-          webFont={{
-            url: `${fontBase}/decalotype.bold.ttf`,
-            format: "truetype",
-          }}
-          fontWeight={700}
-          fontStyle="normal"
-        />
-      </Head>
+      <Head />
       <Preview>
         Drops privados, lanzamientos antes que nadie y promos solo para
         suscriptoras.
@@ -72,15 +37,18 @@ export function NewsletterWelcomeEmail({
 
         <Container style={container}>
           {/* ── Header wordmark ──────────────────────────────────────
-              Brittany Signature para "Bloom Rose" y Decalotype para
-              "accesorios", igual que en el sitio. Carga vía <Font> en el
-              <Head>. Gmail web ignora @font-face → cae al cursivo
-              genérico; el resto de clientes renderiza las custom. */}
+              Imagen pre-renderizada con Brittany Signature + Decalotype
+              (las fuentes reales del sitio). Es la única forma de
+              garantizar que se vea igual en todos los clientes — Gmail
+              web bloquea @font-face. La regeneras corriendo:
+              `magick … public/images/email-wordmark.png` (ver README). */}
           <Section style={header}>
-            <Heading as="h1" style={wordmark}>
-              Bloom Rose
-            </Heading>
-            <Text style={subWordmark}>accesorios</Text>
+            <Img
+              src={`${siteUrl}/images/email-wordmark.png`}
+              alt="Bloom Rose Accesorios"
+              width="420"
+              style={wordmarkImg}
+            />
             <Text style={tagline}>BISUTERÍA ARTESANAL · COLOMBIA</Text>
           </Section>
 
@@ -216,29 +184,11 @@ const header = {
   textAlign: "center" as const,
 };
 
-const wordmark = {
-  fontFamily:
-    "'BrittanySignature', 'Brush Script MT', 'Snell Roundhand', cursive",
-  fontSize: 56,
-  fontWeight: 400,
-  lineHeight: "60px",
-  color: BRAND_TEXT,
-  margin: 0,
-  letterSpacing: 0.5,
-  textAlign: "center" as const,
-};
-
-const subWordmark = {
-  fontFamily:
-    "'Decalotype', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-  fontSize: 11,
-  fontWeight: 700,
-  lineHeight: "14px",
-  letterSpacing: 3,
-  textTransform: "uppercase" as const,
-  color: BRAND_TEXT,
-  margin: "4px 0 8px",
-  textAlign: "center" as const,
+const wordmarkImg = {
+  display: "block",
+  margin: "0 auto 12px",
+  height: "auto",
+  maxWidth: "100%",
 };
 
 const tagline = {
