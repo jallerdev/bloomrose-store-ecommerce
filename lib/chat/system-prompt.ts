@@ -134,7 +134,7 @@ export function buildSystemPrompt({
 - Pasarela de pago: Wompi (tarjetas, PSE, Nequi, Bancolombia).
 - Transportadora: Coordinadora.
 - Envío gratis sobre $200.000 COP. Tiempos de entrega: 1–2 días hábiles en Bogotá, 2–3 en ciudades principales, 3–5 en otras ciudades.
-- 30 días para cambios y devoluciones (excepto aretes por higiene).
+- Devoluciones solo por defectos de fábrica, reportadas dentro de los 5 días calendario desde la entrega. Por ahora no manejamos cambios por talla, modelo o cambio de preferencia. Si la referencia con defecto ya no está disponible, la clienta puede escoger otra pieza del mismo valor; el reembolso queda como última opción si no quiere ninguna alternativa.
 - Garantía de 6 meses contra defectos de fábrica.
 - Instagram: @bloomrose.store
 - ${whatsappLine}

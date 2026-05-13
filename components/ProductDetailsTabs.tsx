@@ -112,8 +112,9 @@ export function ProductDetailsTabs({ description, variants, category }: Props) {
             </li>
             <li>
               <strong className="text-foreground">Devoluciones:</strong> solo
-              por defectos de fábrica. Tienes 5 días desde la entrega para
-              reportarlo. No aceptamos cambios.
+              por defectos de fábrica, con 5 días desde la entrega para
+              reportarlo. Si la referencia con defecto ya no tiene stock,
+              puedes escoger otra pieza del mismo valor.
             </li>
           </ul>
         </div>

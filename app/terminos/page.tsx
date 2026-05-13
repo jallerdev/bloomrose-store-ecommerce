@@ -87,10 +87,11 @@ export default function TerminosPage() {
       <h2>6. Devoluciones</h2>
       <p>
         Aceptamos devoluciones <strong>únicamente por defectos de fábrica</strong>,
-        reportadas dentro de los 5 días calendario posteriores a la entrega. No
-        realizamos cambios por talla, color, modelo ni por arrepentimiento.
-        Consulta la política completa en{" "}
-        <a href="/devoluciones">devoluciones</a>.
+        reportadas dentro de los 5 días calendario posteriores a la entrega. Por
+        ahora no manejamos cambios por talla, color, modelo o cambio de
+        preferencia. Si la referencia con defecto ya no está disponible, puedes
+        escoger otra pieza del mismo valor en lugar del reembolso. Encuentra la
+        política completa en <a href="/devoluciones">devoluciones</a>.
       </p>
 
       <h2>7. Derecho de retracto</h2>

@@ -14,10 +14,7 @@ export default function DevolucionesPage() {
       title="Política de devoluciones"
       subtitle="Solo aceptamos devoluciones por defectos de fábrica."
       lastUpdated="Mayo 2026"
-      breadcrumb={[
-        { label: "Inicio", href: "/" },
-        { label: "Devoluciones" },
-      ]}
+      breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Devoluciones" }]}
     >
       <h2>Política general</h2>
       <p>
@@ -27,14 +24,15 @@ export default function DevolucionesPage() {
           solo aceptamos devoluciones cuando la pieza presenta un defecto de
           fábrica
         </strong>
-        . No realizamos cambios por talla, color, modelo ni por arrepentimiento.
+        . Por ahora no manejamos cambios por talla, color o modelo, ni
+        devoluciones por cambio de preferencia.
       </p>
 
       <h2>¿Qué se considera defecto de fábrica?</h2>
       <ul>
         <li>
-          La pieza llega rota o con daños no atribuibles al envío (problemas
-          de envío los gestiona la transportadora aparte).
+          La pieza llega rota o con daños no atribuibles al envío (problemas de
+          envío los gestiona la transportadora aparte).
         </li>
         <li>
           El armado está mal (cierre roto, eslabones sueltos, pegamento visible,
@@ -56,18 +54,21 @@ export default function DevolucionesPage() {
           Daños por uso, golpes, contacto con agua, perfume, cloro o productos
           químicos.
         </li>
-        <li>Cambio de opinión, arrepentimiento o que la pieza fue un regalo.</li>
         <li>
-          Desgaste natural del baño con el tiempo (cuidados en{" "}
-          <a href="/cuidado-de-joyas">cuidado de joyas</a>).
+          Cambio de preferencia, o que la pieza haya sido un regalo y se quiera
+          devolver.
+        </li>
+        <li>
+          Desgaste natural del baño con el tiempo (consulta las recomendaciones
+          en <a href="/cuidado-de-joyas">el uso de joyas</a>).
         </li>
       </ul>
 
       <h2>Plazo para reportar</h2>
       <p>
         Tienes <strong>5 días calendario</strong> desde la entrega del pedido
-        para reportar el defecto. Después de ese plazo no se aceptan
-        reclamaciones.
+        para reportarnos el defecto. Pasado ese plazo nos cuesta gestionar la
+        reclamación.
       </p>
 
       <h2>Proceso</h2>
@@ -86,18 +87,22 @@ export default function DevolucionesPage() {
         </li>
         <li>
           Cuando recibimos la pieza y confirmamos el defecto (3 a 5 días
-          hábiles), te enviamos una pieza nueva idéntica sin costo. Si la pieza
-          ya no está disponible, se reembolsa el valor al medio de pago
-          original.
+          hábiles), te enviamos una pieza nueva idéntica sin costo. Si la
+          referencia ya no está disponible, puedes escoger otra pieza del mismo
+          valor entre las opciones disponibles; si prefieres, también podemos
+          reembolsar al medio de pago original.
         </li>
       </ol>
 
       <h2>Importante</h2>
       <ul>
         <li>
-          <strong>No aceptamos cambios</strong> por otra pieza, otra talla u
-          otro modelo. Si el producto está defectuoso, lo reemplazamos por la
-          misma referencia.
+          Los{" "}
+          <strong>cambios solo aplican cuando hay defecto de fábrica</strong>.
+          En ese caso reemplazamos por la misma referencia y, si ya no está
+          disponible, puedes escoger otra pieza del mismo valor entre las
+          opciones que tengamos. Por ahora no hacemos cambios por talla, modelo
+          o preferencia.
         </li>
         <li>
           La pieza debe regresar en su <strong>empaque original</strong> y con
