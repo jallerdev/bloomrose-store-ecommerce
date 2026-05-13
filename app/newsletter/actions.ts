@@ -54,10 +54,19 @@ export async function subscribeToNewsletter(
 
     await db.insert(newsletterSubscriptions).values({ email, source });
 
-    // No bloqueamos el form si el email falla — la suscripción ya está guardada.
-    sendNewsletterWelcomeEmail({ email }).catch((err) => {
-      console.error("[newsletter] email failed:", err);
-    });
+    // En Netlify Functions, una promesa "fire-and-forget" se cancela cuando
+    // la action retorna, así que esperamos el envío. Si falla, no revertimos
+    // la suscripción (ya está guardada) pero sí avisamos en el toast para
+    // poder diagnosticar sin logs.
+    try {
+      await sendNewsletterWelcomeEmail({ email });
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      return {
+        status: "success",
+        message: `Te suscribimos, pero no pudimos enviarte el email de bienvenida (${detail}).`,
+      };
+    }
 
     return {
       status: "success",
