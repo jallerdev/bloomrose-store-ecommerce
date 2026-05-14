@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DepartmentCitySelect } from "@/components/checkout/DepartmentCitySelect";
 
 import { createPendingOrderAction } from "./actions";
 import { checkCouponAction } from "./coupon-actions";
@@ -84,6 +85,10 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   );
   const [contactPhone, setContactPhone] = useState(defaultContact.phone);
   const [contactEmail, setContactEmail] = useState(defaultContact.email);
+  // Opt-in al newsletter durante el checkout. Por defecto en true para guests
+  // (es el momento de mayor intención) y false para usuarios autenticados
+  // (probablemente ya están en la lista).
+  const [newsletterOptIn, setNewsletterOptIn] = useState(isGuest);
 
   const [newAddr, setNewAddr] = useState({
     addressLine1: "",
@@ -215,6 +220,7 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
         giftWrap,
         giftMessage: giftWrap ? giftMessage.trim() || null : null,
         notes: notes || null,
+        newsletterOptIn,
       });
 
       if (!result.ok) {
@@ -241,7 +247,17 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
       <div className="flex flex-col gap-8">
         {/* Contacto */}
         <section>
-          <h2 className="mb-4 font-serif text-xl text-foreground">Contacto</h2>
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 className="font-serif text-xl text-foreground">Contacto</h2>
+            {isGuest && (
+              <Link
+                href="/auth/login?next=/checkout"
+                className="text-sm text-primary hover:underline"
+              >
+                Iniciar sesión
+              </Link>
+            )}
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {isGuest && (
               <div className="sm:col-span-2">
@@ -282,6 +298,20 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
               />
+            </div>
+            <div className="flex items-start gap-2 sm:col-span-2">
+              <Checkbox
+                id="newsletter-optin"
+                checked={newsletterOptIn}
+                onCheckedChange={(v) => setNewsletterOptIn(v === true)}
+                className="mt-0.5"
+              />
+              <Label
+                htmlFor="newsletter-optin"
+                className="cursor-pointer text-sm text-muted-foreground"
+              >
+                Enviarme novedades y ofertas por correo electrónico
+              </Label>
             </div>
           </div>
         </section>
@@ -374,30 +404,18 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
                   }
                 />
               </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Ciudad</Label>
-                <Input
-                  className={inputClass + " mt-1"}
-                  value={newAddr.city}
-                  onChange={(e) =>
-                    setNewAddr((a) => ({ ...a, city: e.target.value }))
-                  }
-                  required={addressMode === "new"}
-                />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">
-                  Departamento
-                </Label>
-                <Input
-                  className={inputClass + " mt-1"}
-                  value={newAddr.state}
-                  onChange={(e) =>
-                    setNewAddr((a) => ({ ...a, state: e.target.value }))
-                  }
-                  required={addressMode === "new"}
-                />
-              </div>
+              <DepartmentCitySelect
+                department={newAddr.state}
+                city={newAddr.city}
+                onDepartmentChange={(state) =>
+                  setNewAddr((a) => ({ ...a, state }))
+                }
+                onCityChange={(city) =>
+                  setNewAddr((a) => ({ ...a, city }))
+                }
+                inputClassName={inputClass}
+                required={addressMode === "new"}
+              />
               <div>
                 <Label className="text-xs text-muted-foreground">
                   Código postal (opcional)

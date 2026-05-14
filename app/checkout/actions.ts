@@ -13,6 +13,7 @@ import { quote as quoteShipping } from "@/lib/coordinadora";
 import { validateCoupon } from "@/lib/coupons/validate";
 import { couponRedemptions } from "@/lib/db/schema";
 import { GIFT_WRAP_COST, GIFT_MESSAGE_MAX } from "@/lib/checkout/gift-wrap";
+import { subscribeEmail } from "@/lib/newsletter/subscribe";
 import { z } from "zod";
 
 // Defaults de paquete cuando una variante no tiene dimensiones registradas
@@ -50,6 +51,8 @@ const inputSchema = z.object({
   giftWrap: z.boolean().optional(),
   giftMessage: z.string().max(GIFT_MESSAGE_MAX).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
+  /** Suscripción al newsletter desde el checkout. */
+  newsletterOptIn: z.boolean().optional(),
 });
 
 export type CreatePendingOrderInput = z.infer<typeof inputSchema>;
@@ -340,6 +343,16 @@ export async function createPendingOrderAction(
 
       return order.id;
     });
+
+    // Suscribir al newsletter si marcó el opt-in. Se ejecuta DESPUÉS de la
+    // transacción para no atrasar la creación del pedido ni romperlo si el
+    // insert al newsletter falla.
+    const email = (user?.email ?? input.contactEmail ?? "").trim();
+    if (input.newsletterOptIn && email) {
+      await subscribeEmail({ email, source: "checkout" }).catch((err) => {
+        console.error("[checkout] newsletter optin failed:", err);
+      });
+    }
 
     return {
       ok: true,
