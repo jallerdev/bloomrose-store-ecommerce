@@ -16,19 +16,23 @@
     --card-foreground: 338 25% 16%;
     --popover: 0 0% 100%;
     --popover-foreground: 338 25% 16%;
-    --primary: 339 76% 75%;
+    /* Primary oscurecido para que texto blanco encima pase WCAG AA
+       (contraste ≥ 4.5:1). El rosa claro original (75% L) daba ~2.4:1. */
+    --primary: 339 72% 52%;
     --primary-foreground: 0 0% 100%;
     --secondary: 338 67% 93%;
     --secondary-foreground: 338 25% 20%;
     --muted: 338 50% 96%;
-    --muted-foreground: 338 12% 46%;
+    /* Subido el contraste del texto secundario sobre fondos claros:
+       46% L sobre 99% L daba ~4.3:1 (borderline). 38% L da ~5.3:1. */
+    --muted-foreground: 338 12% 38%;
     --accent: 336 51% 77%;
     --accent-foreground: 338 25% 16%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 338 35% 91%;
     --input: 338 35% 91%;
-    --ring: 339 76% 75%;
+    --ring: 339 72% 52%;
     --chart-1: 339 76% 75%;
     --chart-2: 336 51% 77%;
     --chart-3: 338 73% 81%;
@@ -43,19 +47,22 @@
     --card-foreground: 338 30% 92%;
     --popover: 338 18% 10%;
     --popover-foreground: 338 30% 92%;
-    --primary: 339 76% 75%;
+    /* Misma rosa oscura que en light mode para consistencia de marca y
+       contraste WCAG AA con texto blanco encima. */
+    --primary: 339 72% 52%;
     --primary-foreground: 0 0% 100%;
     --secondary: 338 15% 15%;
     --secondary-foreground: 338 30% 92%;
     --muted: 338 15% 15%;
-    --muted-foreground: 338 10% 55%;
+    /* Subido para que texto secundario sobre cards oscuros pase AA. */
+    --muted-foreground: 338 10% 70%;
     --accent: 336 51% 77%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 338 12% 18%;
     --input: 338 12% 18%;
-    --ring: 339 76% 75%;
+    --ring: 339 72% 52%;
     --chart-1: 339 76% 75%;
     --chart-2: 336 51% 77%;
     --chart-3: 338 73% 81%;
