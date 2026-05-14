@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Menu, X, User, Settings, LogOut, Shield } from "lucide-react";
 import {
@@ -17,9 +18,22 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/lib/store/cart";
 import { useWishlistStore } from "@/lib/store/wishlist";
-import { CartSheet } from "@/components/CartSheet";
 import { WishlistHeaderButton } from "@/components/WishlistHeaderButton";
-import { SearchDialog } from "@/components/SearchDialog";
+
+// SearchDialog y CartSheet solo se montan al click del usuario. Cargarlos
+// dinámicamente saca su payload (Radix Dialog/Sheet + dependencias) del
+// chunk inicial del home y de cualquier ruta pública.
+const CartSheet = dynamic(
+  () => import("@/components/CartSheet").then((m) => ({ default: m.CartSheet })),
+  { ssr: false },
+);
+const SearchDialog = dynamic(
+  () =>
+    import("@/components/SearchDialog").then((m) => ({
+      default: m.SearchDialog,
+    })),
+  { ssr: false },
+);
 
 const navItems = [
   { label: "Tienda", href: "/productos" },
