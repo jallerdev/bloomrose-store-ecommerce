@@ -281,16 +281,25 @@ export default async function HomePage() {
               className="absolute -right-2 bottom-10 hidden h-5 w-5 -rotate-12 text-accent sm:block"
             />
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-secondary shadow-xl shadow-primary/10">
-              <Image
-                src="/images/product-necklace.webp"
-                alt="Collar artesanal Bloom Rose"
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 400px"
-                quality={75}
-                priority
-                fetchPriority="high"
-              />
+              {/* Hero LCP: <picture> directo a /public/images, sin pasar por
+                  /_next/image. Evita la latencia del optimizador en cold
+                  hits (Netlify) y sirve la variante mobile pre-recortada
+                  a 480×640 que pesa 31KB en vez de 89KB. */}
+              <picture>
+                <source
+                  media="(max-width: 768px)"
+                  srcSet="/images/product-necklace-mobile.webp"
+                />
+                <img
+                  src="/images/product-necklace-md.webp"
+                  alt="Collar artesanal Bloom Rose"
+                  width={768}
+                  height={1024}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </picture>
             </div>
 
             {/* Floating chip */}

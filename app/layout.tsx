@@ -19,36 +19,17 @@ const playfair = Playfair_Display({
 
 // Brittany Signature — usada para el wordmark "Bloom Rose"
 const brand = localFont({
-  src: "../public/fonts/BrittanySignature.ttf",
+  src: "../public/fonts/BrittanySignature.woff2",
   weight: "400",
   variable: "--font-brand",
   display: "swap",
 });
 
-// Decalotype — usada para el descriptor "accesorios" y posibles UI accents
+// Decalotype — solo regular (es el único peso que renderizamos: header y
+// footer wordmark "accesorios" sin clase de peso).
 const accent = localFont({
-  src: [
-    {
-      path: "../public/fonts/decalotype.regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/decalotype.medium.ttf",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/decalotype.semibold.ttf",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/decalotype.bold.ttf",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+  src: "../public/fonts/decalotype.regular.woff2",
+  weight: "400",
   variable: "--font-accent",
   display: "swap",
 });
