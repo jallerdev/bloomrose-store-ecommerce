@@ -183,7 +183,7 @@ const seedProducts: SeedProduct[] = [
     description:
       "Cadena de oro entrelazada estilo serpiente. Largo ajustable de 40 a 45cm. Cierre de langosta reforzado.",
     categorySlug: "collares",
-    images: ["/images/product-necklace.jpg"],
+    images: ["/images/product-necklace.webp"],
     variants: [
       v("medium", {
         skuSuffix: "oro18k",
@@ -229,7 +229,7 @@ const seedProducts: SeedProduct[] = [
     description:
       "Pañuelo en mezcla de cachemira y seda. Suave al tacto y muy resistente. 70x70cm.",
     categorySlug: "collares",
-    images: ["/images/product-scarf.jpg"],
+    images: ["/images/product-scarf.webp"],
     variants: [
       v("scarf", {
         skuSuffix: "marfil",
@@ -283,7 +283,7 @@ const seedProducts: SeedProduct[] = [
     description:
       "Bolso de mano de cuero artesanal cosido a mano. Ideal para el día a día. 35x30cm.",
     categorySlug: "pulseras",
-    images: ["/images/product-bag.jpg"],
+    images: ["/images/product-bag.webp"],
     variants: [
       v("large", {
         skuSuffix: "miel",
@@ -355,7 +355,7 @@ const seedProducts: SeedProduct[] = [
     description:
       "Gafas de sol con estilo ojo de gato. Protección UV400. Estuche de tela incluido.",
     categorySlug: "aretes",
-    images: ["/images/product-sunglasses.jpg"],
+    images: ["/images/product-sunglasses.webp"],
     variants: [
       v("medium", {
         skuSuffix: "negro",

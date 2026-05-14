@@ -274,12 +274,14 @@ export function ProductCard({
         {/* Rating */}
         <div className="mt-1 flex items-center gap-1.5">
           <div
-            className="flex items-center gap-0.5"
+            role="img"
             aria-label={`${rating} de 5 estrellas`}
+            className="flex items-center gap-0.5"
           >
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={`star-${name}-${i}`}
+                aria-hidden="true"
                 className={cn(
                   "h-3 w-3 sm:h-3.5 sm:w-3.5",
                   i < Math.floor(rating)
