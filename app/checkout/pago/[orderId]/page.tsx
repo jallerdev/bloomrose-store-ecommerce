@@ -12,9 +12,17 @@ import {
 import { eq } from "drizzle-orm";
 import { StoreHeader } from "@/components/StoreHeader";
 import { Button } from "@/components/ui/button";
-import { Lock, ExternalLink, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Lock,
+  ExternalLink,
+  AlertTriangle,
+  CheckCircle2,
+  MessageCircle,
+} from "lucide-react";
 import { buildCheckoutUrl } from "@/lib/wompi";
 import { PurchaseTracker } from "@/components/PurchaseTracker";
+import { BankAccountList } from "@/components/checkout/BankAccountList";
+import { buildPaymentWhatsappUrl } from "@/lib/checkout/whatsapp";
 
 export const metadata = { title: "Pago · Bloom Rose" };
 export const dynamic = "force-dynamic";
@@ -89,10 +97,23 @@ export default async function PagoPage({ params }: Props) {
         .where(eq(orderItems.orderId, order.id))
     : [];
 
+  // Pago por transferencia manual: no se construye URL de Wompi; se muestran
+  // los datos bancarios + botón de WhatsApp.
+  const isTransfer = order.paymentMethodPreference === "transfer";
+
+  // Mapea la preferencia del checkout al tipo que entiende Wompi.
+  const wompiMethodMap = {
+    card: "CARD",
+    pse: "PSE",
+  } as const;
+  const wompiMethodType = order.paymentMethodPreference
+    ? wompiMethodMap[order.paymentMethodPreference as "card" | "pse"]
+    : undefined;
+
   // Construir URL de Wompi. Si faltan credenciales, mostramos un fallback.
   let checkoutUrl: string | null = null;
   let configError: string | null = null;
-  if (!alreadyPaid) {
+  if (!alreadyPaid && !isTransfer) {
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -103,6 +124,14 @@ export default async function PagoPage({ params }: Props) {
         customerEmail,
         customerFullName: order.shippingFullName ?? undefined,
         customerPhone: order.shippingPhone ?? undefined,
+        paymentMethodType: wompiMethodType,
+        legalId: order.legalId,
+        legalIdType: order.legalIdType as
+          | "CC"
+          | "CE"
+          | "NIT"
+          | "PP"
+          | null,
       });
     } catch (err) {
       configError =
@@ -110,17 +139,37 @@ export default async function PagoPage({ params }: Props) {
     }
   }
 
+  // Datos para el flujo de transferencia.
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
+  const transferWhatsappUrl = buildPaymentWhatsappUrl({
+    whatsappNumber,
+    paymentReference: order.paymentReference ?? order.id.slice(0, 8),
+    total: fmt(Number(order.totalAmount)),
+  });
+  const customerFirstName =
+    order.shippingFullName?.split(" ")[0] ?? "";
+
   return (
     <main className="min-h-screen bg-background">
       <StoreHeader />
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="font-serif text-3xl text-foreground">
-            {alreadyPaid ? "¡Pedido confirmado!" : "Confirmación de pago"}
+            {alreadyPaid
+              ? "¡Pedido confirmado!"
+              : isTransfer
+                ? `¡Gracias${customerFirstName ? `, ${customerFirstName}` : ""}!`
+                : "Confirmación de pago"}
           </h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Lock className="h-3.5 w-3.5" />
-            Procesado de forma segura por Wompi
+            {isTransfer && !alreadyPaid ? (
+              <>Tu pedido está confirmado · pendiente de pago</>
+            ) : (
+              <>
+                <Lock className="h-3.5 w-3.5" />
+                Procesado de forma segura por Wompi
+              </>
+            )}
           </p>
         </div>
 
@@ -169,6 +218,51 @@ export default async function PagoPage({ params }: Props) {
                     quantity: i.quantity,
                   }))}
                 />
+              </div>
+            ) : isTransfer ? (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-400">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    <strong>ATENCIÓN:</strong> Debes enviar el soporte de pago
+                    por WhatsApp{whatsappNumber ? ` al ${whatsappNumber}` : ""}{" "}
+                    con el número de pedido{" "}
+                    <strong>{order.paymentReference}</strong> que también te
+                    llegará al correo. Tu orden será despachada de{" "}
+                    <strong>3 a 8 días hábiles (lunes a viernes)</strong> a
+                    ciudades principales. Para poblaciones rurales o de difícil
+                    acceso la entrega puede demorar más días.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Cuentas para transferencia
+                  </p>
+                  <BankAccountList />
+                </div>
+
+                <Button
+                  asChild
+                  className="w-full rounded-xl bg-[#25D366] py-6 text-base text-white hover:bg-[#25D366]/90"
+                >
+                  <a
+                    href={transferWhatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Reportar pago por WhatsApp
+                  </a>
+                </Button>
+
+                <div className="flex items-start gap-2 rounded-lg border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    Recuerda que el pedido no se envía hasta que nos reportes el
+                    pago y lo confirmemos.
+                  </p>
+                </div>
               </div>
             ) : configError ? (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-8 text-center">

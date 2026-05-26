@@ -15,7 +15,10 @@ import { OrderShippedEmail } from "./templates/OrderShipped";
 import { WelcomeEmail } from "./templates/Welcome";
 import { BackInStockEmail } from "./templates/BackInStock";
 import { NewsletterWelcomeEmail } from "./templates/NewsletterWelcome";
+import { OrderPendingTransferEmail } from "./templates/OrderPendingTransfer";
 import { buildUnsubscribeUrl } from "@/lib/newsletter/token";
+import { BANK_ACCOUNTS } from "@/lib/checkout/bank-accounts";
+import { buildPaymentWhatsappUrl } from "@/lib/checkout/whatsapp";
 
 let resendClient: Resend | null = null;
 function getResend(): Resend | null {
@@ -91,6 +94,52 @@ export async function sendNewsletterWelcomeEmail(args: { email: string }) {
       siteUrl: SITE,
       shopUrl: `${SITE}/productos`,
       unsubscribeUrl: buildUnsubscribeUrl(SITE, args.email),
+    }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Pedido pendiente de pago por transferencia (al crear la orden)
+// ─────────────────────────────────────────────────────────────────
+
+export async function sendOrderPendingTransferEmail(args: { orderId: string }) {
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, args.orderId))
+    .limit(1);
+  if (!order) throw new Error(`Order not found: ${args.orderId}`);
+
+  const [profile] = order.profileId
+    ? await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.id, order.profileId))
+        .limit(1)
+    : [];
+  const recipientEmail = profile?.email ?? order.guestEmail ?? null;
+  if (!recipientEmail) throw new Error("Order has no contact email");
+  const recipientName =
+    profile?.firstName || order.shippingFullName?.split(" ")[0] || "amiga";
+
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
+  const reference = order.paymentReference || order.id.slice(0, 8);
+  const total = fmt(Number(order.totalAmount));
+
+  return send({
+    to: recipientEmail,
+    subject: `Pedido recibido · ${reference} — Pendiente de pago`,
+    react: OrderPendingTransferEmail({
+      customerName: recipientName,
+      paymentReference: reference,
+      total,
+      whatsappNumber,
+      whatsappUrl: buildPaymentWhatsappUrl({
+        whatsappNumber,
+        paymentReference: reference,
+        total,
+      }),
+      bankAccounts: BANK_ACCOUNTS,
     }),
   });
 }

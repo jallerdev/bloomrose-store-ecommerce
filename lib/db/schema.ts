@@ -184,6 +184,16 @@ export const orders = pgTable(
   paymentMethod: varchar("payment_method", { length: 100 }),
   paymentId: varchar("payment_id", { length: 255 }),
   paymentReference: varchar("payment_reference", { length: 255 }).unique(),
+  /** Método de pago preferido seleccionado por el cliente en el checkout
+   *  (pre-seleccionado en Wompi). Valores: CARD, NEQUI, PSE,
+   *  BANCOLOMBIA_TRANSFER, o null para que Wompi muestre todas las opciones. */
+  paymentMethodPreference: varchar("payment_method_preference", { length: 50 }),
+
+  /** Identificación del comprador (cédula/NIT). Requerida para PSE y
+   *  Bancolombia en Wompi, opcional para tarjeta. También necesaria para
+   *  factura electrónica futura. */
+  legalIdType: varchar("legal_id_type", { length: 8 }),
+  legalId: varchar("legal_id", { length: 32 }),
 
   // Empaque de regalo
   giftWrap: boolean("gift_wrap").default(false).notNull(),

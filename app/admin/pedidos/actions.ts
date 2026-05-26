@@ -13,7 +13,7 @@ import {
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createGuide } from "@/lib/coordinadora";
-import { sendOrderShippedEmail } from "@/lib/email";
+import { sendOrderShippedEmail, sendOrderPaidEmail } from "@/lib/email";
 
 async function requireAdmin(): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = await createClient();
@@ -57,10 +57,25 @@ export async function updateOrderStatusAction(input: {
   const parsed = updateStatusSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Estado inválido" };
 
+  // Leemos el estado previo para detectar la transición a PAID (pago manual
+  // por transferencia confirmado por el admin) y disparar el email de
+  // confirmación — el mismo que envía el webhook de Wompi en pagos online.
+  const [prev] = await db
+    .select({ status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, parsed.data.orderId))
+    .limit(1);
+
   await db
     .update(orders)
     .set({ status: parsed.data.status, updatedAt: new Date() })
     .where(eq(orders.id, parsed.data.orderId));
+
+  if (parsed.data.status === "PAID" && prev?.status !== "PAID") {
+    sendOrderPaidEmail({ orderId: parsed.data.orderId }).catch((e) =>
+      console.error("Paid email failed:", e),
+    );
+  }
 
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${parsed.data.orderId}`);

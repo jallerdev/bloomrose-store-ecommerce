@@ -38,6 +38,16 @@ export function buildIntegritySignature(input: {
  * Construye la URL completa del Web Checkout de Wompi para un pedido dado.
  * El usuario es redirigido a esta URL y completa el pago en el dominio de Wompi.
  */
+/** Métodos de pago que Wompi soporta para pre-selección en el Web Checkout. */
+export type WompiPaymentMethod =
+  | "CARD"
+  | "NEQUI"
+  | "PSE"
+  | "BANCOLOMBIA_TRANSFER";
+
+/** Tipos de identificación aceptados por Wompi para legal-id. */
+export type WompiLegalIdType = "CC" | "CE" | "NIT" | "PP";
+
 export function buildCheckoutUrl(input: {
   reference: string;
   amountCop: number; // en pesos (no centavos); aquí lo convertimos
@@ -45,6 +55,11 @@ export function buildCheckoutUrl(input: {
   customerEmail?: string;
   customerFullName?: string;
   customerPhone?: string;
+  /** Si está presente, Wompi pre-selecciona ese método de pago. */
+  paymentMethodType?: WompiPaymentMethod | null;
+  /** Cédula/NIT del comprador. Requerida para PSE y Bancolombia. */
+  legalId?: string | null;
+  legalIdType?: WompiLegalIdType | null;
 }): string {
   const publicKey = requireEnv("WOMPI_PUBLIC_KEY");
   const integritySecret = requireEnv("WOMPI_INTEGRITY_SECRET");
@@ -71,6 +86,11 @@ export function buildCheckoutUrl(input: {
     params.set("customer-data:full-name", input.customerFullName);
   if (input.customerPhone)
     params.set("customer-data:phone-number", input.customerPhone);
+  if (input.legalId) params.set("customer-data:legal-id", input.legalId);
+  if (input.legalIdType)
+    params.set("customer-data:legal-id-type", input.legalIdType);
+  if (input.paymentMethodType)
+    params.set("payment-method:type", input.paymentMethodType);
 
   return `${WOMPI_CHECKOUT_URL}?${params.toString()}`;
 }

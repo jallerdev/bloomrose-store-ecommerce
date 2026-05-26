@@ -14,6 +14,7 @@ import { validateCoupon } from "@/lib/coupons/validate";
 import { couponRedemptions } from "@/lib/db/schema";
 import { GIFT_WRAP_COST, GIFT_MESSAGE_MAX } from "@/lib/checkout/gift-wrap";
 import { subscribeEmail } from "@/lib/newsletter/subscribe";
+import { sendOrderPendingTransferEmail } from "@/lib/email";
 import { z } from "zod";
 
 // Defaults de paquete cuando una variante no tiene dimensiones registradas
@@ -53,6 +54,11 @@ const inputSchema = z.object({
   notes: z.string().max(1000).optional().nullable(),
   /** Suscripción al newsletter desde el checkout. */
   newsletterOptIn: z.boolean().optional(),
+  /** Método de pago preferido seleccionado en el checkout. */
+  paymentMethodPreference: z.enum(["card", "pse", "transfer"]),
+  /** Identificación del comprador (requerida para PSE). */
+  legalIdType: z.enum(["CC", "CE", "NIT", "PP"]).optional(),
+  legalId: z.string().min(5).max(32).optional(),
 });
 
 export type CreatePendingOrderInput = z.infer<typeof inputSchema>;
@@ -89,6 +95,16 @@ export async function createPendingOrderAction(
     return {
       ok: false,
       error: "Necesitamos tu email para enviarte la confirmación.",
+    };
+  }
+  // PSE requiere cédula en Wompi.
+  if (
+    input.paymentMethodPreference === "pse" &&
+    (!input.legalId || !input.legalIdType)
+  ) {
+    return {
+      ok: false,
+      error: "Para pagar con PSE necesitas ingresar tu identificación.",
     };
   }
   // Los guests no pueden usar direcciones guardadas ni guardarlas.
@@ -305,6 +321,9 @@ export async function createPendingOrderAction(
           shippingCountry: "Colombia",
           shippingCarrier: "Coordinadora",
           paymentReference,
+          paymentMethodPreference: input.paymentMethodPreference,
+          legalIdType: input.legalId ? input.legalIdType ?? null : null,
+          legalId: input.legalId ?? null,
           couponCode: appliedCoupon?.code ?? null,
           giftWrap,
           giftWrapCost: giftWrapCost.toFixed(2),
@@ -351,6 +370,15 @@ export async function createPendingOrderAction(
     if (input.newsletterOptIn && email) {
       await subscribeEmail({ email, source: "checkout" }).catch((err) => {
         console.error("[checkout] newsletter optin failed:", err);
+      });
+    }
+
+    // Para transferencia manual enviamos el email con instrucciones de pago
+    // (en tarjeta/PSE el email de confirmación lo dispara el webhook de Wompi
+    // tras la aprobación).
+    if (input.paymentMethodPreference === "transfer") {
+      await sendOrderPendingTransferEmail({ orderId }).catch((err) => {
+        console.error("[checkout] pending-transfer email failed:", err);
       });
     }
 

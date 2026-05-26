@@ -15,14 +15,25 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DepartmentCitySelect } from "@/components/checkout/DepartmentCitySelect";
+import { BankAccountList } from "@/components/checkout/BankAccountList";
 
 import { createPendingOrderAction } from "./actions";
 import { checkCouponAction } from "./coupon-actions";
 import { estimateShippingCost } from "@/lib/shipping";
 import { analytics } from "@/lib/analytics";
-import { Tag, X as XIcon, Gift } from "lucide-react";
+import { Tag, X as XIcon, Gift, CreditCard, Building2, Banknote, AlertTriangle } from "lucide-react";
 import { GIFT_WRAP_COST, GIFT_MESSAGE_MAX } from "@/lib/checkout/gift-wrap";
+
+type PaymentMethod = "card" | "pse" | "transfer";
+type LegalIdType = "CC" | "CE" | "NIT" | "PP";
 
 interface AddressDTO {
   id: string;
@@ -89,6 +100,13 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
   // (es el momento de mayor intención) y false para usuarios autenticados
   // (probablemente ya están en la lista).
   const [newsletterOptIn, setNewsletterOptIn] = useState(isGuest);
+
+  // Identificación (cédula/NIT). Requerida para PSE; opcional para otros.
+  const [legalIdType, setLegalIdType] = useState<LegalIdType>("CC");
+  const [legalId, setLegalId] = useState("");
+
+  // Método de pago preferido.
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
 
   const [newAddr, setNewAddr] = useState({
     addressLine1: "",
@@ -193,6 +211,11 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
       toast.error("Ingresa tu email para enviarte la confirmación");
       return;
     }
+    // PSE exige cédula en Wompi: la validamos antes de crear el pedido.
+    if (paymentMethod === "pse" && legalId.trim().length < 5) {
+      toast.error("Ingresa tu número de identificación para pagar con PSE");
+      return;
+    }
 
     startTransition(async () => {
       const result = await createPendingOrderAction({
@@ -221,6 +244,9 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
         giftMessage: giftWrap ? giftMessage.trim() || null : null,
         notes: notes || null,
         newsletterOptIn,
+        paymentMethodPreference: paymentMethod,
+        legalIdType: legalId.trim() ? legalIdType : undefined,
+        legalId: legalId.trim() || undefined,
       });
 
       if (!result.ok) {
@@ -298,6 +324,41 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
                 onChange={(e) => setContactPhone(e.target.value)}
                 required
               />
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">
+                Identificación{" "}
+                {paymentMethod === "pse" && (
+                  <span className="text-destructive">*</span>
+                )}
+              </Label>
+              <div className="mt-1 flex gap-2">
+                <Select
+                  value={legalIdType}
+                  onValueChange={(v) => setLegalIdType(v as LegalIdType)}
+                >
+                  <SelectTrigger className={inputClass + " w-24 shrink-0"}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CC">CC</SelectItem>
+                    <SelectItem value="CE">CE</SelectItem>
+                    <SelectItem value="NIT">NIT</SelectItem>
+                    <SelectItem value="PP">Pasaporte</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  className={inputClass + " flex-1"}
+                  inputMode="numeric"
+                  value={legalId}
+                  onChange={(e) => setLegalId(e.target.value)}
+                  placeholder="Número de identificación"
+                  required={paymentMethod === "pse"}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Necesaria para pagos con PSE y para tu factura.
+              </p>
             </div>
             <div className="flex items-start gap-2 sm:col-span-2">
               <Checkbox
@@ -442,6 +503,57 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
                 >
                   Guardar esta dirección para futuros pedidos
                 </Label>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Método de pago */}
+        <section>
+          <h2 className="mb-4 font-serif text-xl text-foreground">
+            Método de pago
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Todas las transacciones son seguras y están encriptadas.
+          </p>
+          <RadioGroup
+            value={paymentMethod}
+            onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+            className="flex flex-col gap-3"
+          >
+            <PaymentOption
+              value="card"
+              active={paymentMethod === "card"}
+              icon={<CreditCard className="h-5 w-5 text-primary" />}
+              title="Tarjeta de crédito o débito"
+              subtitle="Visa · Mastercard · Amex"
+            />
+            <PaymentOption
+              value="pse"
+              active={paymentMethod === "pse"}
+              icon={<Building2 className="h-5 w-5 text-primary" />}
+              title="PSE"
+              subtitle="Débito desde tu cuenta bancaria"
+            />
+            <PaymentOption
+              value="transfer"
+              active={paymentMethod === "transfer"}
+              icon={<Banknote className="h-5 w-5 text-primary" />}
+              title="Transferencia bancaria"
+              subtitle="Bancolombia · Davivienda · Nequi"
+            />
+          </RadioGroup>
+
+          {paymentMethod === "transfer" && (
+            <div className="mt-4 flex flex-col gap-3">
+              <BankAccountList />
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>
+                  Tras confirmar el pedido te daremos el número de referencia y
+                  un botón para reportar tu pago por WhatsApp. El pedido se
+                  despacha solo cuando confirmemos la transferencia.
+                </p>
               </div>
             </div>
           )}
@@ -651,14 +763,53 @@ export function CheckoutClient({ isGuest, addresses, defaultContact }: Props) {
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Procesando...
             </>
+          ) : paymentMethod === "transfer" ? (
+            "Confirmar pedido"
           ) : (
             "Confirmar y pagar"
           )}
         </Button>
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          Serás redirigido a Wompi para completar el pago.
+          {paymentMethod === "transfer"
+            ? "Verás los datos de pago y el botón para reportar tu transferencia."
+            : "Serás redirigido a la pasarela segura para completar el pago."}
         </p>
       </aside>
     </form>
+  );
+}
+
+function PaymentOption({
+  value,
+  active,
+  icon,
+  title,
+  subtitle,
+}: {
+  value: string;
+  active: boolean;
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <label
+      htmlFor={`pay-${value}`}
+      className={
+        "flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors " +
+        (active
+          ? "border-primary bg-primary/5"
+          : "border-border bg-card hover:border-primary/40")
+      }
+    >
+      <RadioGroupItem value={value} id={`pay-${value}`} />
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+        {icon}
+      </span>
+      <span className="flex flex-col">
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        <span className="text-xs text-muted-foreground">{subtitle}</span>
+      </span>
+    </label>
   );
 }
