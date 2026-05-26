@@ -73,6 +73,23 @@ export function Footer() {
             © {new Date().getFullYear()} Bloom Rose. Todos los derechos
             reservados.
           </p>
+          <nav
+            aria-label="Enlaces legales"
+            className="flex items-center gap-4 text-[11px] text-muted-foreground"
+          >
+            <Link
+              href="/privacidad"
+              className="transition-colors hover:text-foreground"
+            >
+              Privacidad
+            </Link>
+            <Link
+              href="/terminos"
+              className="transition-colors hover:text-foreground"
+            >
+              Términos
+            </Link>
+          </nav>
           <p className="text-[11px] text-muted-foreground">
             Hecho con cariño en Colombia ·{" "}
             <a

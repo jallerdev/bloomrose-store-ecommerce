@@ -198,12 +198,14 @@ function SignupForm({ returnTo }: { returnTo: string }) {
       password: "",
       confirmPassword: "",
       acceptTerms: undefined as unknown as true,
+      acceptDataAuth: undefined as unknown as true,
     },
     mode: "onBlur",
   });
 
   const password = watch("password");
   const acceptTerms = watch("acceptTerms");
+  const acceptDataAuth = watch("acceptDataAuth");
 
   function onSubmit(values: SignupInput) {
     const fd = new FormData();
@@ -213,6 +215,7 @@ function SignupForm({ returnTo }: { returnTo: string }) {
     fd.set("password", values.password);
     fd.set("confirmPassword", values.confirmPassword);
     fd.set("acceptTerms", values.acceptTerms ? "on" : "");
+    fd.set("acceptDataAuth", values.acceptDataAuth ? "on" : "");
     fd.set("returnTo", returnTo);
     startTransition(async () => {
       const res = await signupAction(fd);
@@ -381,6 +384,38 @@ function SignupForm({ returnTo }: { returnTo: string }) {
       {errors.acceptTerms && (
         <p className="-mt-2 text-xs text-destructive">
           {errors.acceptTerms.message}
+        </p>
+      )}
+
+      <div className="flex items-start gap-2">
+        <Checkbox
+          id="acceptDataAuth"
+          checked={Boolean(acceptDataAuth)}
+          onCheckedChange={(v) =>
+            setValue(
+              "acceptDataAuth",
+              v === true ? true : (false as unknown as true),
+              { shouldValidate: true },
+            )
+          }
+        />
+        <Label
+          htmlFor="acceptDataAuth"
+          className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
+        >
+          Autorizo el tratamiento de mis datos personales conforme a la{" "}
+          <Link
+            href="/privacidad"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            política de privacidad
+          </Link>{" "}
+          y la Ley 1581 de 2012.
+        </Label>
+      </div>
+      {errors.acceptDataAuth && (
+        <p className="-mt-2 text-xs text-destructive">
+          {errors.acceptDataAuth.message}
         </p>
       )}
 

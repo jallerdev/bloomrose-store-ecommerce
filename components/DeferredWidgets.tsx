@@ -20,6 +20,14 @@ const Analytics = dynamic(
   { ssr: false },
 );
 
+const CookieConsentBanner = dynamic(
+  () =>
+    import("@/components/CookieConsentBanner").then((m) => ({
+      default: m.CookieConsentBanner,
+    })),
+  { ssr: false },
+);
+
 interface Props {
   whatsappNumber: string;
   chatEnabled: boolean;
@@ -34,6 +42,7 @@ export function DeferredWidgets({ whatsappNumber, chatEnabled }: Props) {
         chatEnabled={chatEnabled}
       />
       <Analytics />
+      <CookieConsentBanner />
     </>
   );
 }

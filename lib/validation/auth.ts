@@ -44,6 +44,11 @@ export const signupSchema = z
     acceptTerms: z.literal(true, {
       errorMap: () => ({ message: "Debes aceptar los términos" }),
     }),
+    acceptDataAuth: z.literal(true, {
+      errorMap: () => ({
+        message: "Debes autorizar el tratamiento de tus datos personales",
+      }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],

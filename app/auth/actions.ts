@@ -66,6 +66,7 @@ export async function signupAction(formData: FormData) {
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
     acceptTerms: formData.get("acceptTerms") === "on" ? true : undefined,
+    acceptDataAuth: formData.get("acceptDataAuth") === "on" ? true : undefined,
   });
   if (!parsed.success) {
     const first = parsed.error.errors[0];
@@ -83,6 +84,8 @@ export async function signupAction(formData: FormData) {
       data: {
         first_name: firstName,
         last_name: lastName,
+        data_processing_consent: true,
+        data_processing_consent_at: new Date().toISOString(),
       },
       emailRedirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent(
         returnTo,
