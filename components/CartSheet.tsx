@@ -110,7 +110,7 @@ export function CartSheet() {
                             </p>
                           )}
                           <p className="mt-1 text-sm font-semibold text-foreground">
-                            ${item.price.toLocaleString("es-MX")}
+                            ${item.price.toLocaleString("es-CO")}
                           </p>
                         </div>
                         <button
@@ -158,7 +158,7 @@ export function CartSheet() {
             <div className="border-t border-border pt-6 pb-2">
               <FreeShippingMeter subtotal={getTotalPrice()} />
               <div className="mt-4 flex items-center justify-between text-base font-medium text-foreground">
-                <p>Subtotal ({totalItems} items)</p>
+                <p>Subtotal ({totalItems} {totalItems === 1 ? "artículo" : "artículos"})</p>
                 <p>${getTotalPrice().toLocaleString("es-CO")}</p>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">

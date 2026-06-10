@@ -37,11 +37,11 @@ export default async function ColeccionesPage() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
             Nuestras{" "}
-            <span className="font-brand text-4xl text-primary sm:text-5xl lg:text-6xl">
+            <span className="font-brand text-4xl text-primary leading-[1.55] sm:text-5xl lg:text-6xl">
               Colecciones
             </span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
+          <p className="mt-5 max-w-xl text-sm text-muted-foreground sm:mt-6 sm:text-base">
             Cada categoría reúne piezas seleccionadas a mano. Encuentra la que
             resuene con tu estilo.
           </p>

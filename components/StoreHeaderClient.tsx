@@ -105,7 +105,7 @@ export function StoreHeaderClient({
             </span>
           </Link>
         </div>
-        <nav aria-label="Navegacion principal" className="hidden sm:block">
+        <nav aria-label="Navegación principal" className="hidden sm:block">
           <ul className="flex items-center gap-8 text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             {navItems.map((item) => (
               <li key={item.label}>

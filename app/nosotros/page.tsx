@@ -8,7 +8,7 @@ import { Heart, Leaf, Sparkles, Users, ArrowRight } from "lucide-react";
 export const metadata = {
   title: "Nosotros — Bloom Rose Accesorios",
   description:
-    "Conoce la historia detras de Bloom Rose. Accesorios artesanales disenados con amor y dedicacion.",
+    "Conoce la historia detrás de Bloom Rose. Accesorios artesanales diseñados con amor y dedicación.",
 };
 
 const values = [
@@ -16,25 +16,25 @@ const values = [
     icon: Heart,
     title: "Hecho con amor",
     description:
-      "Cada pieza pasa por manos artesanas que cuidan cada detalle con dedicacion y pasion por el oficio.",
+      "Cada pieza pasa por manos artesanas que cuidan cada detalle con dedicación y pasión por el oficio.",
   },
   {
     icon: Leaf,
     title: "Materiales responsables",
     description:
-      "Seleccionamos materiales de proveedores locales comprometidos con practicas sustentables.",
+      "Seleccionamos materiales de proveedores locales comprometidos con prácticas sustentables.",
   },
   {
     icon: Sparkles,
-    title: "Diseno unico",
+    title: "Diseño único",
     description:
-      "Nuestros disenos nacen de la inspiracion en la naturaleza, el arte y la feminidad contemporanea.",
+      "Nuestros diseños nacen de la inspiración en la naturaleza, el arte y la feminidad contemporánea.",
   },
   {
     icon: Users,
     title: "Comunidad",
     description:
-      "Mas que una marca, somos una comunidad de mujeres que celebran su autenticidad a traves de los accesorios.",
+      "Más que una marca, somos una comunidad de mujeres que celebran su autenticidad a través de los accesorios.",
   },
 ];
 
@@ -47,9 +47,12 @@ export default function NosotrosPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <h1 className="font-serif text-2xl text-foreground sm:text-3xl lg:text-4xl">
-            Sobre <span className="font-brand text-primary text-4xl sm:text-5xl lg:text-6xl">Bloom Rose</span>
+            Sobre{" "}
+            <span className="font-brand text-primary text-4xl leading-[1.4] sm:text-5xl lg:text-6xl">
+              Bloom Rose
+            </span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
+          <p className="mt-4 max-w-xl text-sm text-muted-foreground sm:mt-5 sm:text-base">
             Accesorios artesanales que cuentan historias y celebran la
             autenticidad de cada mujer.
           </p>
@@ -77,24 +80,24 @@ export default function NosotrosPage() {
                 Nuestra Historia
               </p>
               <h2 className="mt-3 font-serif text-xl text-foreground sm:text-2xl lg:text-3xl">
-                De un sueno a una comunidad
+                De un sueño a una comunidad
               </h2>
               <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
                 <p>
-                  Bloom Rose nacio en 2022 como un pequeno taller artesanal con
-                  una mision clara: crear accesorios que resaltaran la belleza
-                  unica de cada mujer, sin comprometer la calidad ni el
+                  Bloom Rose nació en 2022 como un pequeño taller artesanal con
+                  una misión clara: crear accesorios que resaltaran la belleza
+                  única de cada mujer, sin comprometer la calidad ni el
                   compromiso con el medio ambiente.
                 </p>
                 <p>
-                  Lo que empezo como un proyecto personal, rapidamente se
-                  convirtio en una comunidad de mujeres que comparten la pasion
-                  por los detalles, lo artesanal y lo autentico.
+                  Lo que empezó como un proyecto personal, rápidamente se
+                  convirtió en una comunidad de mujeres que comparten la pasión
+                  por los detalles, lo artesanal y lo auténtico.
                 </p>
                 <p>
                   Hoy, cada pieza de Bloom Rose es el resultado de un proceso
-                  cuidadoso que combina tecnicas tradicionales con disenos
-                  contemporaneos, utilizando materiales seleccionados a mano por
+                  cuidadoso que combina técnicas tradicionales con diseños
+                  contemporáneos, utilizando materiales seleccionados a mano por
                   nuestro equipo.
                 </p>
               </div>
@@ -144,7 +147,7 @@ export default function NosotrosPage() {
               ¿Lista para encontrar tu pieza favorita?
             </h2>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Explora nuestra coleccion completa y encuentra los accesorios que
+              Explora nuestra colección completa y encuentra los accesorios que
               complementen tu estilo.
             </p>
             <Button
